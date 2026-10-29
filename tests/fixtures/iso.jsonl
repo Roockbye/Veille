@@ -1,0 +1,4 @@
+{"id":82875,"reference":"ISO/IEC 27001:2022","title":{"en":"ISMS — Requirements","fr":"SMSI — Exigences"},"publicationDate":"2022-10-25","edition":3,"ownerCommittee":"ISO/IEC JTC 1/SC 27","currentStage":6060,"replaces":[54534],"replacedBy":null}
+{"id":54534,"reference":"ISO/IEC 27001:2013","title":{"en":"ISMS 2013"},"publicationDate":"2013-09-25","edition":2,"ownerCommittee":"ISO/IEC JTC 1/SC 27","currentStage":9599,"replaces":null,"replacedBy":[82875]}
+{"id":75652,"reference":"ISO/IEC 27002:2022","title":{"en":"Controls"},"publicationDate":"2022-02-15","edition":3,"ownerCommittee":"ISO/IEC JTC 1/SC 27","currentStage":6060,"replaces":null,"replacedBy":[94703]}
+{"id":11111,"reference":"ISO 9001:2015","title":{"en":"QMS"},"publicationDate":"2015-09-15","edition":5,"ownerCommittee":"ISO/TC 176","currentStage":6060,"replaces":null,"replacedBy":null}

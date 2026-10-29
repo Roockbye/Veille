@@ -1,0 +1,23 @@
+# Environnements et caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.streamlit/secrets.toml
+
+# Secrets
+.env
+*.pem
+*.key
+
+# Données d'exécution (base, rapports générés, journaux)
+data/
+!data/.gitkeep
+
+# Profil réel de l'organisation (potentiellement sensible)
+config/organisation.yaml
+
+# Divers
+.DS_Store
+*.log

@@ -1,0 +1,23 @@
+# Service systemd (utilisateur) pour la planification continue, indépendante de l'interface.
+# Installation :
+#   mkdir -p ~/.config/systemd/user && cp docs/deploiement/veille-scheduler.service ~/.config/systemd/user/
+#   (adapter WorkingDirectory / ExecStart au chemin du projet)
+#   systemctl --user daemon-reload && systemctl --user enable --now veille-scheduler
+#   loginctl enable-linger $USER     # pour que le service tourne sans session ouverte
+#   journalctl --user -u veille-scheduler -f
+[Unit]
+Description=Veille cybersécurité — planificateur de collecte et de rapports
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Documents/Projets/Veille
+ExecStart=%h/Documents/Projets/Veille/.venv/bin/python -m veille scheduler
+Restart=on-failure
+RestartSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

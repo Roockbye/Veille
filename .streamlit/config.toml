@@ -1,0 +1,15 @@
+[server]
+# Écoute locale uniquement : l'application n'intègre pas d'authentification.
+# Pour un serveur partagé, placer un reverse proxy avec authentification (voir README).
+address = "localhost"
+port = 8501
+headless = true
+maxUploadSize = 5
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "light"
+primaryColor = "#1F3A5F"

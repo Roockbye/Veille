@@ -1,0 +1,58 @@
+# ==========================================================================================
+#  PROFIL DE DÉMONSTRATION — ORGANISATION FICTIVE
+#  Ce profil sert uniquement à la démonstration de l'outil. Remplacez-le par le profil
+#  réel de votre organisation depuis la page « Configuration » ou en créant
+#  config/organisation.yaml (non versionné).
+# ==========================================================================================
+demonstration: true
+nom: "NumériSanté Services (organisation fictive de démonstration)"
+secteur: services_tic_b2b
+secteurs_secondaires: [sante]
+roles: [responsable_traitement, sous_traitant_rgpd, hebergeur_donnees_sante, deployeur_systeme_ia, fournisseur_administration]
+taille: moyenne
+effectif: 140
+chiffre_affaires_meur: 18
+pays: France
+maturite_cyber: definie
+activites:
+  - Infogérance et hébergement d'applications métiers pour des établissements de santé privés
+  - Développement et maintenance d'un portail patient (application web)
+  - Support utilisateurs et administration de postes de travail pour ses clients
+donnees_traitees: [donnees_personnelles, donnees_sante, donnees_rh, donnees_clients]
+# Conseil : choisir des mots-clés précis (nom de produit plutôt que nom d'éditeur) pour limiter les faux positifs.
+technologies:
+  - {nom: Microsoft Windows Server, categorie: systeme, versions: ["2019", "2022"], mots_cles: [Windows Server, Windows], exposition: interne, criticite: elevee}
+  - {nom: Microsoft Windows 11, categorie: poste_de_travail, versions: ["23H2", "24H2"], mots_cles: [Windows 11, Windows], exposition: interne, criticite: moyenne}
+  - {nom: Active Directory / Entra ID, categorie: annuaire, versions: [], mots_cles: [Active Directory, Entra ID, Azure AD, Kerberos, NTLM], exposition: interne, criticite: critique}
+  - {nom: Microsoft 365 / Exchange Online, categorie: application, versions: [], mots_cles: [Microsoft 365, Exchange Online, Exchange Server, Microsoft Exchange, Outlook, SharePoint, Microsoft Teams], exposition: internet, criticite: elevee}
+  - {nom: Fortinet FortiGate (VPN SSL), categorie: securite, versions: ["7.4"], mots_cles: [FortiGate, FortiOS, FortiProxy], exposition: internet, criticite: critique}
+  - {nom: Cisco Catalyst (commutation), categorie: reseau, versions: [], mots_cles: [Cisco IOS XE, IOS XE, Catalyst 9200, Catalyst 9300], exposition: interne, criticite: elevee}
+  - {nom: VMware ESXi / vCenter, categorie: virtualisation, versions: ["8.0"], mots_cles: [ESXi, vCenter, VMware, vSphere], exposition: interne, criticite: critique}
+  - {nom: Ubuntu Server, categorie: systeme, versions: ["22.04", "24.04"], mots_cles: [Ubuntu], exposition: dmz, criticite: elevee}
+  - {nom: Debian, categorie: systeme, versions: ["12"], mots_cles: [Debian], exposition: interne, criticite: moyenne}
+  - {nom: Nginx, categorie: serveur, versions: [], mots_cles: [nginx], exposition: internet, criticite: elevee}
+  - {nom: PHP, categorie: application, versions: ["8.2"], mots_cles: [PHP], exposition: internet, criticite: elevee}
+  - {nom: PostgreSQL, categorie: base_de_donnees, versions: ["15"], mots_cles: [PostgreSQL], exposition: interne, criticite: critique}
+  - {nom: OpenSSH, categorie: serveur, versions: [], mots_cles: [OpenSSH], exposition: dmz, criticite: elevee}
+  - {nom: Kubernetes, categorie: cloud, versions: ["1.30"], mots_cles: [Kubernetes, kubelet], exposition: interne, criticite: elevee}
+  - {nom: GitLab, categorie: application, versions: [], mots_cles: [GitLab], exposition: internet, criticite: elevee}
+  - {nom: Veeam Backup & Replication, categorie: securite, versions: ["12"], mots_cles: [Veeam], exposition: interne, criticite: critique}
+  - {nom: Wazuh (SIEM/XDR), categorie: securite, versions: [], mots_cles: [Wazuh], exposition: interne, criticite: moyenne}
+  - {nom: Microsoft Defender for Endpoint, categorie: securite, versions: [], mots_cles: [Defender for Endpoint, Microsoft Defender], exposition: interne, criticite: elevee}
+  - {nom: Google Chrome / Microsoft Edge, categorie: poste_de_travail, versions: [], mots_cles: [Chrome, Chromium, Microsoft Edge], exposition: internet, criticite: moyenne}
+contraintes_securite:
+  - Disponibilité 24/7 exigée par les clients établissements de santé
+  - Hébergement des données de santé en France
+  - Équipe sécurité réduite (1 RSSI, 2 administrateurs formés)
+risques_connus:
+  - Rançongiciel via l'accès VPN exposé sur Internet
+  - Compromission de comptes par hameçonnage (Microsoft 365)
+  - Vulnérabilités de l'application web portail patient
+exigences:
+  - {id: rgpd, nom: RGPD, type: legale, statut: identifiee, commentaire: "DPO désigné"}
+  - {id: hds, nom: Certification HDS, type: legale, statut: identifiee, commentaire: "Certification à renouveler"}
+  - {id: iso27001, nom: ISO/IEC 27001, type: contractuelle, statut: identifiee, commentaire: "Exigée par deux clients ; référentiel HDS adossé à l'ISO 27001"}
+  - {id: nis2, nom: NIS 2, type: legale, statut: a_confirmer, commentaire: "Qualification entité importante à confirmer"}
+themes_veille: [ia_generative, ia_cybersecurite, soar, siem_edr_xdr, zero_trust_iam, cloud_conteneurs, post_quantique, devsecops_sbom, detection_remediation]
+frequence_collecte: quotidienne
+frequence_rapport: hebdomadaire

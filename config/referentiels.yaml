@@ -1,0 +1,442 @@
+# Référentiel des textes réglementaires, normes et référentiels surveillés.
+#
+# IMPORTANT — nature de ces informations :
+#   Ce fichier est une BASE DE CONNAISSANCES de configuration, rédigée à partir des sources officielles
+#   citées (champ `references`). Elle n'est pas « collectée » : chaque rapport la présente comme telle et
+#   invite à revérifier les statuts et dates sur la source officielle (champ `verifie_le`).
+#   Les règles d'applicabilité produisent une ORIENTATION (« probable », « à qualifier »...), jamais une
+#   conclusion juridique : l'applicabilité doit être confirmée par le juriste, le DPO ou le RSSI.
+#
+# nature_juridique :
+#   obligation_legale        texte contraignant (règlement, directive transposée, loi, décret)
+#   norme                    norme volontaire (ISO/IEC...) ; devient exigible seulement par contrat ou certification visée
+#   referentiel              référentiel de bonnes pratiques (NIST CSF, guides...)
+#   recommandation           recommandation d'une autorité (non contraignante en soi)
+#   exigence_contractuelle   exigence imposée par contrat ou par un réseau (ex. PCI DSS)
+#
+# Résultats d'applicabilité : probable | indirect | a_qualifier | peu_probable | non_evaluable
+
+textes:
+  - id: rgpd
+    nom: RGPD — Règlement général sur la protection des données
+    reference: Règlement (UE) 2016/679
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [RGPD, GDPR, "2016/679", protection des données, données personnelles, données à caractère personnel, data protection, CNIL, EDPB, DPO, délégué à la protection, violation de données, data breach, analyse d'impact, AIPD, DPIA, cookies, traceurs]
+    statut: applicable
+    dates:
+      - {date: "2016-05-04", libelle: Publication au JOUE}
+      - {date: "2018-05-25", libelle: Entrée en application}
+    references:
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679
+    verifie_le: "2026-10-29"
+    concernes: Tout organisme qui traite des données à caractère personnel (responsable de traitement ou sous-traitant) établi dans l'UE ou ciblant des personnes dans l'UE.
+    obligations_possibles:
+      - Tenue du registre des traitements (art. 30)
+      - Sécurité des traitements adaptée au risque (art. 32)
+      - Notification des violations de données à la CNIL sous 72 h (art. 33) et aux personnes si risque élevé (art. 34)
+      - Analyse d'impact (AIPD) pour les traitements à risque élevé (art. 35)
+      - Encadrement contractuel des sous-traitants (art. 28)
+    demarches_applicabilite:
+      - Vérifier dans le registre des traitements les données personnelles effectivement traitées
+      - Qualifier le rôle de l'organisation (responsable de traitement, sous-traitant, responsable conjoint)
+      - Consulter le DPO sur l'impact de l'évolution détectée
+    applicabilite:
+      regles:
+        - si: {donnees: [donnees_personnelles, donnees_sante, donnees_rh, donnees_clients, donnees_bancaires, donnees_sensibles_rgpd]}
+          resultat: probable
+          motif: L'organisation déclare traiter des données à caractère personnel.
+        - si: {roles: [sous_traitant_rgpd, responsable_traitement]}
+          resultat: probable
+          motif: L'organisation déclare un rôle de responsable de traitement ou de sous-traitant.
+      defaut: {resultat: a_qualifier, motif: "Quasiment toute organisation traite des données personnelles (RH, clients) : à confirmer dans le registre des traitements."}
+
+  - id: nis2
+    nom: NIS 2 — Directive sur la sécurité des réseaux et des systèmes d'information
+    reference: Directive (UE) 2022/2555 ; règlement d'exécution (UE) 2024/2690
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [NIS2, NIS 2, "2022/2555", "2024/2690", entités essentielles, entités importantes, essential entities, important entities, directive NIS, résilience des infrastructures critiques]
+    statut: adopte_transposition_a_verifier
+    dates:
+      - {date: "2022-12-27", libelle: Publication au JOUE}
+      - {date: "2024-10-17", libelle: Date limite de transposition par les États membres}
+      - {date: "2024-10-18", libelle: Application des mesures nationales de transposition (selon la directive)}
+    references:
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022L2555
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R2690
+      - https://monespacenis2.cyber.gouv.fr/
+    verifie_le: "2026-10-29"
+    note_statut: >-
+      En France, la transposition passe par la loi relative à la résilience des infrastructures critiques et au
+      renforcement de la cybersécurité et ses décrets d'application : le statut de publication et les dates
+      d'entrée en vigueur nationales sont à vérifier sur Légifrance et sur le site de l'ANSSI.
+    concernes: >-
+      Entités moyennes et grandes (≥ 50 salariés ou CA/bilan > 10 M€) des secteurs des annexes I et II
+      (énergie, transports, banque, santé, eau, infrastructures numériques, gestion des services TIC B2B,
+      administrations, espace, postal, déchets, chimie, alimentaire, fabrication, fournisseurs numériques,
+      recherche). Certaines entités sont visées quelle que soit leur taille (ex. DNS, services de confiance).
+    obligations_possibles:
+      - Enregistrement auprès de l'autorité nationale (ANSSI)
+      - Mesures de gestion des risques cyber (art. 21) approuvées par les organes de direction (art. 20)
+      - "Notification des incidents importants : alerte précoce 24 h, notification 72 h, rapport final 1 mois (art. 23)"
+      - Sécurité de la chaîne d'approvisionnement
+    demarches_applicabilite:
+      - Vérifier si l'activité principale relève d'un secteur des annexes I ou II
+      - Vérifier les seuils de taille (effectif, chiffre d'affaires, bilan) au niveau de l'entreprise et du groupe
+      - Utiliser le simulateur de l'ANSSI (MonEspaceNIS2) pour qualifier entité essentielle / importante
+      - Vérifier le texte national de transposition en vigueur
+    applicabilite:
+      regles:
+        - si: {secteurs: [energie, transports, banque, infrastructures_marches_financiers, sante, eau, infrastructure_numerique, services_tic_b2b, administration_publique, espace, postal, dechets, chimie, alimentaire, fabrication, fournisseurs_numeriques, recherche], taille_min: moyenne}
+          resultat: probable
+          motif: Le secteur déclaré figure dans les annexes de NIS 2 et la taille atteint le seuil des entités moyennes.
+        - si: {secteurs: [energie, transports, banque, infrastructures_marches_financiers, sante, eau, infrastructure_numerique, services_tic_b2b, administration_publique, espace, postal, dechets, chimie, alimentaire, fabrication, fournisseurs_numeriques, recherche, collectivite]}
+          resultat: a_qualifier
+          motif: Secteur visé mais taille sous le seuil ou à préciser ; des exceptions indépendantes de la taille existent.
+        - si: {roles: [fournisseur_administration, prestataire_tic_secteur_financier]}
+          resultat: indirect
+          motif: Les clients assujettis peuvent imposer des exigences contractuelles (sécurité de la chaîne d'approvisionnement).
+      defaut: {resultat: peu_probable, motif: "Secteur déclaré hors annexes NIS 2 ; impact indirect possible via les clients assujettis."}
+
+  - id: dora
+    nom: DORA — Résilience opérationnelle numérique du secteur financier
+    reference: Règlement (UE) 2022/2554
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [DORA, "2022/2554", résilience opérationnelle numérique, digital operational resilience, ICT third-party, prestataires tiers de services TIC, TLPT, registre d'informations]
+    statut: applicable
+    dates:
+      - {date: "2022-12-27", libelle: Publication au JOUE}
+      - {date: "2025-01-17", libelle: Entrée en application}
+    references:
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022R2554
+    verifie_le: "2026-10-29"
+    concernes: Entités financières (banques, assurances, entreprises d'investissement, prestataires de crypto-actifs...) et, indirectement, leurs prestataires de services TIC.
+    obligations_possibles:
+      - Cadre de gestion du risque lié aux TIC
+      - Notification des incidents majeurs liés aux TIC
+      - Tests de résilience (dont TLPT pour certaines entités)
+      - Gestion du risque lié aux prestataires tiers (clauses contractuelles, art. 30) et registre d'informations
+    demarches_applicabilite:
+      - Vérifier si l'organisation est une entité financière au sens de l'article 2
+      - Si prestataire TIC d'entités financières, recenser les clauses contractuelles DORA imposées par les clients
+    applicabilite:
+      regles:
+        - si: {secteurs: [banque, assurance, infrastructures_marches_financiers]}
+          resultat: probable
+          motif: Le secteur déclaré correspond à des entités financières visées par DORA.
+        - si: {roles: [prestataire_tic_secteur_financier]}
+          resultat: indirect
+          motif: Prestataire TIC d'entités financières — exigences contractuelles DORA (art. 30) probables.
+      defaut: {resultat: peu_probable, motif: "Organisation non financière et pas de rôle de prestataire TIC du secteur financier déclaré."}
+
+  - id: ai_act
+    nom: AI Act — Règlement européen sur l'intelligence artificielle
+    reference: Règlement (UE) 2024/1689
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [AI Act, "2024/1689", règlement IA, règlement sur l'intelligence artificielle, Artificial Intelligence Act, AI Office, high-risk AI, systèmes d'IA à haut risque, general-purpose AI, GPAI, modèles d'IA à usage général]
+    statut: applicable_progressivement
+    dates:
+      - {date: "2024-07-12", libelle: Publication au JOUE}
+      - {date: "2024-08-01", libelle: Entrée en vigueur}
+      - {date: "2025-02-02", libelle: Application des interdictions et de l'obligation de maîtrise de l'IA (AI literacy)}
+      - {date: "2025-08-02", libelle: Application des règles relatives aux modèles d'IA à usage général}
+      - {date: "2026-08-02", libelle: Application générale (selon le texte initial)}
+      - {date: "2027-08-02", libelle: Systèmes à haut risque intégrés à des produits réglementés (annexe I)}
+    references:
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R1689
+      - https://ai-act-service-desk.ec.europa.eu/
+    verifie_le: "2026-10-29"
+    note_statut: >-
+      Le calendrier d'application de certaines obligations (notamment haut risque) a fait l'objet de propositions
+      de modification par la Commission (« omnibus numérique », 2025). Les dates ci-dessus sont celles du texte
+      initial : le calendrier en vigueur doit être vérifié sur EUR-Lex.
+    concernes: Fournisseurs, déployeurs, importateurs et distributeurs de systèmes d'IA mis sur le marché ou utilisés dans l'UE.
+    obligations_possibles:
+      - Recenser les systèmes d'IA utilisés ou développés et les classer par niveau de risque
+      - Maîtrise de l'IA (formation) du personnel concerné (art. 4)
+      - Obligations des déployeurs de systèmes à haut risque (art. 26)
+      - Obligations de transparence (art. 50)
+    demarches_applicabilite:
+      - Inventorier les usages d'IA (y compris IA générative en libre-service)
+      - Qualifier le rôle (fournisseur ou déployeur) pour chaque système
+      - Vérifier si un usage relève de l'annexe III (haut risque)
+    applicabilite:
+      regles:
+        - si: {roles: [fournisseur_systeme_ia]}
+          resultat: probable
+          motif: L'organisation déclare développer ou fournir des systèmes d'IA.
+        - si: {roles: [deployeur_systeme_ia]}
+          resultat: probable
+          motif: L'organisation déclare utiliser des systèmes d'IA dans un cadre professionnel (déployeur).
+      defaut: {resultat: a_qualifier, motif: "Usages d'IA non déclarés : l'utilisation d'outils d'IA générative par les salariés suffit à faire de l'organisation un déployeur."}
+
+  - id: cra
+    nom: CRA — Règlement sur la cyberrésilience
+    reference: Règlement (UE) 2024/2847
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [Cyber Resilience Act, CRA, "2024/2847", cyberrésilience, produits comportant des éléments numériques, products with digital elements]
+    statut: applicable_progressivement
+    dates:
+      - {date: "2024-11-20", libelle: Publication au JOUE}
+      - {date: "2024-12-10", libelle: Entrée en vigueur}
+      - {date: "2026-09-11", libelle: Obligations de signalement des vulnérabilités activement exploitées et des incidents}
+      - {date: "2027-12-11", libelle: Application générale}
+    references:
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R2847
+    verifie_le: "2026-10-29"
+    concernes: Fabricants, importateurs et distributeurs de produits matériels et logiciels comportant des éléments numériques mis sur le marché de l'UE.
+    obligations_possibles:
+      - Exigences essentielles de cybersécurité dès la conception
+      - Gestion des vulnérabilités pendant la période de support (SBOM, correctifs)
+      - Signalement des vulnérabilités activement exploitées à l'ENISA / au CSIRT
+    demarches_applicabilite:
+      - Vérifier si l'organisation met sur le marché des logiciels ou produits connectés
+      - Exclure les cas hors champ (SaaS pur relevant de NIS 2, logiciels libres non commerciaux...)
+    applicabilite:
+      regles:
+        - si: {roles: [fabricant_produits_numeriques, editeur_logiciel]}
+          resultat: probable
+          motif: L'organisation déclare éditer des logiciels ou fabriquer des produits numériques.
+      defaut: {resultat: peu_probable, motif: "Aucune activité d'édition logicielle ou de fabrication de produits numériques déclarée ; impact indirect via les fournisseurs (SBOM, support)."}
+
+  - id: eidas2
+    nom: eIDAS 2 — Identité numérique européenne et services de confiance
+    reference: Règlement (UE) 2024/1183 modifiant le règlement (UE) n° 910/2014
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [eIDAS, "2024/1183", "910/2014", identité numérique, portefeuille européen d'identité, EUDI wallet, services de confiance, trust services, signature électronique qualifiée]
+    statut: applicable_progressivement
+    dates:
+      - {date: "2024-04-30", libelle: Publication au JOUE}
+      - {date: "2024-05-20", libelle: Entrée en vigueur}
+    references:
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R1183
+    verifie_le: "2026-10-29"
+    concernes: Prestataires de services de confiance, émetteurs de portefeuilles, parties utilisatrices de certains secteurs.
+    obligations_possibles:
+      - Acceptation du portefeuille européen d'identité numérique pour certaines parties utilisatrices
+      - Exigences applicables aux prestataires de services de confiance
+    demarches_applicabilite:
+      - Vérifier si l'organisation fournit des services de confiance ou est partie utilisatrice soumise à acceptation
+    applicabilite:
+      regles:
+        - si: {roles: [prestataire_services_confiance]}
+          resultat: probable
+          motif: L'organisation déclare fournir des services de confiance.
+      defaut: {resultat: peu_probable, motif: "Pas de rôle de prestataire de services de confiance déclaré ; usage possible de la signature électronique à vérifier."}
+
+  - id: oiv_lpm
+    nom: Dispositif OIV (loi de programmation militaire)
+    reference: Code de la défense, art. L. 1332-6-1 et suivants
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [OIV, opérateur d'importance vitale, SIIV, loi de programmation militaire, LPM]
+    statut: applicable
+    dates: []
+    references:
+      - https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006071307/LEGISCTA000028344696/
+    verifie_le: "2026-10-29"
+    concernes: Opérateurs désignés comme d'importance vitale par l'État (désignation notifiée, non publique).
+    obligations_possibles:
+      - Règles de sécurité des SIIV fixées par arrêtés sectoriels
+      - Recours à des prestataires qualifiés (PDIS, PRIS, PASSI)
+    demarches_applicabilite:
+      - Vérifier auprès de la direction si l'organisation a reçu une désignation OIV
+    applicabilite:
+      regles:
+        - si: {roles: [operateur_importance_vitale]}
+          resultat: probable
+          motif: L'organisation déclare être désignée OIV.
+      defaut: {resultat: peu_probable, motif: "Aucune désignation OIV déclarée (une désignation fait l'objet d'une notification de l'État)."}
+
+  - id: hds
+    nom: Certification Hébergeur de Données de Santé (HDS)
+    reference: Code de la santé publique, art. L. 1111-8 ; référentiel de certification HDS
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [HDS, hébergeur de données de santé, hébergement de données de santé, données de santé]
+    statut: applicable
+    dates: []
+    references:
+      - https://esante.gouv.fr/produits-services/hds
+    verifie_le: "2026-10-29"
+    concernes: Toute personne qui héberge des données de santé à caractère personnel pour le compte de tiers.
+    obligations_possibles:
+      - Certification HDS de l'hébergeur (référentiel s'appuyant notamment sur ISO/IEC 27001)
+    demarches_applicabilite:
+      - Vérifier si l'organisation héberge ou infogère des données de santé pour le compte de clients
+    applicabilite:
+      regles:
+        - si: {roles: [hebergeur_donnees_sante]}
+          resultat: probable
+          motif: L'organisation déclare héberger des données de santé pour le compte de tiers.
+        - si: {donnees: [donnees_sante]}
+          resultat: a_qualifier
+          motif: Des données de santé sont traitées ; la certification n'est requise qu'en cas d'hébergement pour le compte de tiers.
+      defaut: {resultat: peu_probable, motif: "Aucun traitement de données de santé déclaré."}
+
+  - id: pci_dss
+    nom: PCI DSS — Sécurité des données de cartes de paiement
+    reference: PCI DSS v4.0.1 (PCI Security Standards Council)
+    nature_juridique: exigence_contractuelle
+    type_veille: normative
+    mots_cles: [PCI DSS, PCI-DSS, PCI SSC, cartes de paiement, payment card]
+    statut: applicable
+    dates:
+      - {date: "2025-03-31", libelle: Exigences « future-dated » de la v4.0 devenues obligatoires}
+    references:
+      - https://www.pcisecuritystandards.org/document_library/
+    verifie_le: "2026-10-29"
+    concernes: Organisations qui stockent, traitent ou transmettent des données de cartes de paiement (exigence imposée par contrat via les acquéreurs).
+    obligations_possibles:
+      - Conformité PCI DSS selon le niveau marchand et le périmètre (CDE)
+    demarches_applicabilite:
+      - Vérifier les contrats d'acquisition et le mode d'acceptation des paiements (externalisé ou non)
+    applicabilite:
+      regles:
+        - si: {roles: [accepte_paiements_carte], donnees: [donnees_bancaires]}
+          resultat: probable
+          motif: Paiements par carte acceptés et données bancaires traitées.
+        - si: {roles: [accepte_paiements_carte]}
+          resultat: a_qualifier
+          motif: Paiements par carte acceptés ; le périmètre dépend de l'externalisation du paiement.
+      defaut: {resultat: peu_probable, motif: "Aucune acceptation de paiement par carte déclarée."}
+
+  # ----------------------------------------------------------------- Normes et référentiels
+  - id: iso27001
+    nom: ISO/IEC 27001 — Systèmes de management de la sécurité de l'information
+    reference: ISO/IEC 27001:2022 (+ Amd 1:2024)
+    nature_juridique: norme
+    type_veille: normative
+    mots_cles: [ISO 27001, ISO/IEC 27001, "27001", SMSI, ISMS, système de management de la sécurité]
+    statut: publie
+    dates:
+      - {date: "2022-10-25", libelle: Publication de l'édition 2022}
+      - {date: "2025-10-31", libelle: Fin de la période de transition des certifications 2013 vers 2022 (IAF)}
+    references:
+      - https://www.iso.org/standard/27001
+    verifie_le: "2026-10-29"
+    concernes: Toute organisation souhaitant structurer ou certifier son SMSI. Norme volontaire, exigible seulement par contrat, appel d'offres ou référentiel qui la rend obligatoire (ex. HDS).
+    obligations_possibles: []
+    demarches_applicabilite:
+      - Vérifier si une certification est détenue, visée ou exigée par des clients
+    applicabilite:
+      regles:
+        - si: {exigence: [iso27001]}
+          resultat: probable
+          motif: L'organisation a déclaré ISO/IEC 27001 dans ses exigences (certification ou exigence contractuelle).
+      defaut: {resultat: a_qualifier, motif: "Norme volontaire : pertinente comme cadre de référence, exigible uniquement si un contrat ou une certification la vise."}
+
+  - id: iso27002
+    nom: ISO/IEC 27002 — Mesures de sécurité de l'information
+    reference: ISO/IEC 27002:2022
+    nature_juridique: norme
+    type_veille: normative
+    mots_cles: [ISO 27002, ISO/IEC 27002, "27002", mesures de sécurité, annexe A]
+    statut: publie
+    dates:
+      - {date: "2022-02-15", libelle: Publication de l'édition 2022}
+    references:
+      - https://www.iso.org/standard/75652.html
+    verifie_le: "2026-10-29"
+    concernes: Recueil de recommandations de mesures (93 mesures en 4 thèmes) ; guide de mise en œuvre de l'annexe A de l'ISO/IEC 27001.
+    obligations_possibles: []
+    demarches_applicabilite:
+      - Comparer la déclaration d'applicabilité (DdA/SoA) avec les mesures de l'édition en vigueur
+    applicabilite:
+      regles:
+        - si: {exigence: [iso27001, iso27002]}
+          resultat: probable
+          motif: Référentiel de mesures associé à une exigence déclarée par l'organisation.
+      defaut: {resultat: a_qualifier, motif: "Recommandations de mesures : non contraignantes en soi."}
+
+  - id: iso42001
+    nom: ISO/IEC 42001 — Système de management de l'IA
+    reference: ISO/IEC 42001:2023
+    nature_juridique: norme
+    type_veille: normative
+    mots_cles: [ISO 42001, ISO/IEC 42001, "42001", AI management system]
+    statut: publie
+    dates:
+      - {date: "2023-12-18", libelle: Publication}
+    references:
+      - https://www.iso.org/standard/81230.html
+    verifie_le: "2026-10-29"
+    concernes: Organisations qui développent ou utilisent des systèmes d'IA et souhaitent en encadrer la gouvernance.
+    obligations_possibles: []
+    demarches_applicabilite:
+      - Évaluer l'intérêt au regard des usages d'IA recensés et des exigences de l'AI Act
+    applicabilite:
+      regles:
+        - si: {roles: [fournisseur_systeme_ia, deployeur_systeme_ia]}
+          resultat: a_qualifier
+          motif: Usages d'IA déclarés ; norme volontaire pouvant structurer la conformité AI Act.
+      defaut: {resultat: peu_probable, motif: "Aucun usage d'IA déclaré."}
+
+  - id: nist_csf
+    nom: NIST Cybersecurity Framework 2.0
+    reference: NIST CSWP 29 (CSF 2.0)
+    nature_juridique: referentiel
+    type_veille: normative
+    mots_cles: [NIST CSF, Cybersecurity Framework, CSF 2.0, NIST SP 800, SP 800-53, SP 800-61, NIST]
+    statut: publie
+    dates:
+      - {date: "2024-02-26", libelle: Publication du CSF 2.0}
+    references:
+      - https://www.nist.gov/cyberframework
+    verifie_le: "2026-10-29"
+    concernes: Référentiel volontaire utilisable par toute organisation (fonctions Gouverner, Identifier, Protéger, Détecter, Répondre, Rétablir).
+    obligations_possibles: []
+    demarches_applicabilite:
+      - Utiliser comme grille d'auto-évaluation de maturité, sans valeur d'obligation
+    applicabilite:
+      regles:
+        - si: {exigence: [nist_csf]}
+          resultat: probable
+          motif: Référentiel retenu par l'organisation.
+      defaut: {resultat: a_qualifier, motif: "Référentiel de bonnes pratiques volontaire."}
+
+  - id: anssi_hygiene
+    nom: Guide d'hygiène informatique de l'ANSSI et recommandations ANSSI
+    reference: ANSSI — Guide d'hygiène informatique (42 mesures) et guides techniques
+    nature_juridique: recommandation
+    type_veille: normative
+    mots_cles: [guide d'hygiène, hygiène informatique, recommandations de l'ANSSI, guide ANSSI, ANSSI recommande, bonnes pratiques ANSSI]
+    statut: publie
+    dates: []
+    references:
+      - https://cyber.gouv.fr/publications/guide-dhygiene-informatique
+    verifie_le: "2026-10-29"
+    concernes: Toute organisation ; recommandations non contraignantes, sauf lorsqu'un texte ou un contrat y renvoie.
+    obligations_possibles: []
+    demarches_applicabilite:
+      - Comparer les pratiques actuelles avec les recommandations (analyse d'écart)
+    applicabilite:
+      regles: []
+      defaut: {resultat: a_qualifier, motif: "Recommandations applicables à toute organisation, sans caractère obligatoire."}
+
+  - id: secnumcloud
+    nom: SecNumCloud — Référentiel de qualification des prestataires cloud
+    reference: Référentiel SecNumCloud (ANSSI)
+    nature_juridique: referentiel
+    type_veille: normative
+    mots_cles: [SecNumCloud, cloud de confiance, qualification ANSSI]
+    statut: publie
+    dates: []
+    references:
+      - https://cyber.gouv.fr/secnumcloud-pour-les-fournisseurs-de-services-cloud
+    verifie_le: "2026-10-29"
+    concernes: Prestataires cloud visant la qualification ; clients (notamment publics) pouvant l'exiger contractuellement.
+    obligations_possibles: []
+    demarches_applicabilite:
+      - Vérifier si des clients publics ou sensibles exigent un hébergement qualifié
+    applicabilite:
+      regles:
+        - si: {roles: [fournisseur_administration], secteurs: [infrastructure_numerique, services_tic_b2b]}
+          resultat: a_qualifier
+          motif: "Prestataire numérique travaillant pour l'administration : exigence possible dans les marchés publics."
+      defaut: {resultat: peu_probable, motif: "Pas d'activité d'hébergement cloud pour des clients publics déclarée."}

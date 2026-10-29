@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0"><head><title>Export Feedly (test)</title></head><body>
+<outline text="Sécurité" title="Sécurité">
+  <outline type="rss" text="Blog A" title="Blog A" xmlUrl="https://blog-a.test/feed" htmlUrl="https://blog-a.test"/>
+  <outline type="rss" text="Lien dangereux" title="Lien dangereux" xmlUrl="javascript:alert(1)"/>
+  <outline type="rss" text="Blog A doublon" title="Blog A doublon" xmlUrl="https://blog-a.test/feed"/>
+</outline></body></opml>

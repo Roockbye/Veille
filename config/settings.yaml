@@ -1,0 +1,40 @@
+# Paramètres par défaut. Les valeurs modifiées depuis l'interface (page « Automatisation »)
+# sont enregistrées dans la base (table settings) et priment sur ce fichier.
+
+collecte:
+  user_agent: "VeilleCyber/1.0 (outil de veille defensive; usage interne)"
+  timeout_secondes: 20
+  max_octets: 20000000          # taille maximale d'une réponse (20 Mo) sauf surcharge par source
+  tentatives: 3                 # nombre de tentatives en cas d'erreur réseau transitoire
+  delai_min_meme_hote_secondes: 1.0
+  respecter_robots_txt: true
+  max_items_par_source: 60      # éléments lus au maximum par flux et par collecte
+  kev_fenetre_jours: 30         # au premier chargement KEV : ajout comme articles des entrées des N derniers jours
+  domaines_autorises_supplementaires:
+    - services.nvd.nist.gov      # enrichissement CVSS (API NVD officielle)
+    - api.first.org              # enrichissement EPSS (FIRST)
+
+enrichissement:
+  nvd_actif: true
+  epss_actif: true
+  max_cve_par_execution: 40      # API NVD sans clé : 5 requêtes / 30 s
+
+planification:
+  active: false                  # désactivée par défaut ; activable depuis l'interface
+  integree: true                 # true : tâches exécutées par le serveur Streamlit ; false : service autonome uniquement
+  intervalle_collecte_minutes: 30   # vérification des sources « dues » selon leur propre fréquence
+  rapport_frequence: hebdomadaire   # hebdomadaire | mensuel | desactive
+  rapport_jour_semaine: mon         # pour l'hebdomadaire (mon..sun)
+  rapport_heure: 7
+
+notifications:
+  email_actif: false
+  alerte_niveaux: [Critique]
+  rapport_disponible: true
+
+ia:
+  active: false                  # nécessite une clé API dans .env ; jamais requis pour fonctionner
+  max_articles_par_execution: 20
+
+conservation:
+  jours_articles: 730

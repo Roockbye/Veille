@@ -1,0 +1,10 @@
+[project]
+name = "veille-cyber"
+version = "1.0.0"
+description = "Outil de veille technologique, technique, réglementaire et normative en cybersécurité"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ""
+filterwarnings = ["ignore::DeprecationWarning"]

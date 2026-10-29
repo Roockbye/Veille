@@ -1,0 +1,793 @@
+# Catalogue initial des sources de veille.
+# Ce fichier sert à initialiser la base au premier lancement (ou via `python -m veille sources-import`).
+# Les sources sont ensuite modifiables depuis l'interface (page « Sources et méthodologie »).
+#
+# Toutes les URL marquées `actif: true` ont été vérifiées le 2026-10-29 (HTTP 200, flux analysable).
+# Note : le CERT-FR a migré de www.cert.ssi.gouv.fr vers cert.cyber.gouv.fr (redirection 302 constatée le 2026-10-29).
+# Les sources inaccessibles en collecte automatique sont conservées avec `actif: false`, un statut
+# explicite et une alternative documentée : rien n'est contourné.
+#
+# Champs :
+#   id              identifiant stable (lettres, chiffres, tirets)
+#   type            rss | cisa_kev | iso_opendata | feedly | manuel
+#   categorie       technique | reglementaire | normative | technologique
+#   nature          officielle | editeur | presse_specialisee | recherche | communautaire
+#   confiance       elevee | moyenne | faible   (fiabilité attendue de la source, pas des articles)
+#   frequence_minutes  intervalle minimal entre deux interrogations
+#   filtre_mots_cles   si renseigné, seuls les éléments contenant au moins un mot-clé sont conservés
+#   max_items       nombre maximal d'éléments lus par collecte (flux volumineux)
+#   technologies    technologies concernées (flux éditeurs) : utilisé pour la pertinence
+
+sources:
+  # ------------------------------------------------------------------ A. Veille technique
+  - id: certfr-alertes
+    nom: CERT-FR — Alertes de sécurité
+    url: https://cert.cyber.gouv.fr/alerte/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Alertes et vulnérabilités critiques
+    organisme: ANSSI / CERT-FR
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 60
+    justification: >-
+      Centre gouvernemental de veille, d'alerte et de réponse aux attaques informatiques (ANSSI).
+      Les alertes signalent des vulnérabilités activement exploitées ou critiques nécessitant une action rapide.
+    actif: true
+
+  - id: certfr-avis
+    nom: CERT-FR — Avis de sécurité
+    url: https://cert.cyber.gouv.fr/avis/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Vulnérabilités et correctifs
+    organisme: ANSSI / CERT-FR
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 60
+    justification: >-
+      Avis décrivant les vulnérabilités publiées par les éditeurs, les produits affectés et les correctifs.
+      Source de référence francophone pour la gestion des correctifs.
+    actif: true
+
+  - id: certfr-cti
+    nom: CERT-FR — Menaces et incidents
+    url: https://cert.cyber.gouv.fr/cti/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Menaces et campagnes
+    organisme: ANSSI / CERT-FR
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 720
+    justification: Rapports de menace (modes opératoires, rançongiciels, campagnes) produits par l'ANSSI.
+    actif: true
+
+  - id: certfr-actualite
+    nom: CERT-FR — Bulletins d'actualité
+    url: https://cert.cyber.gouv.fr/actualite/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Synthèses et recommandations
+    organisme: ANSSI / CERT-FR
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 720
+    justification: Bulletins hebdomadaires synthétisant les vulnérabilités significatives et les recommandations associées.
+    actif: true
+
+  - id: cisa-kev
+    nom: CISA — Known Exploited Vulnerabilities (KEV)
+    url: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+    type: cisa_kev
+    categorie: technique
+    sous_categorie: Vulnérabilités exploitées
+    organisme: CISA (États-Unis)
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 360
+    justification: >-
+      Catalogue officiel des vulnérabilités dont l'exploitation active est confirmée par la CISA.
+      Utilisé pour vérifier le critère « exploitation active » de la priorisation.
+    actif: true
+
+  - id: cisa-avis
+    nom: CISA — Cybersecurity Advisories
+    url: https://www.cisa.gov/cybersecurity-advisories/all.xml
+    type: rss
+    categorie: technique
+    sous_categorie: Avis et alertes
+    organisme: CISA (États-Unis)
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 180
+    justification: Avis techniques (dont systèmes industriels) et alertes conjointes avec les agences partenaires.
+    actif: true
+
+  - id: cisa-news
+    nom: CISA — Actualités
+    url: https://www.cisa.gov/news.xml
+    type: rss
+    categorie: technique
+    sous_categorie: Actualités institutionnelles
+    organisme: CISA (États-Unis)
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    justification: Annonces de la CISA (stratégies, guides conjoints, campagnes).
+    actif: true
+
+  - id: cybermalveillance
+    nom: Cybermalveillance.gouv.fr — Actualités
+    url: https://www.cybermalveillance.gouv.fr/feed/atom-flux-actualites
+    type: rss
+    categorie: technique
+    sous_categorie: Menaces grand public et sensibilisation
+    organisme: GIP ACYMA
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 720
+    justification: Alertes sur les campagnes d'hameçonnage et d'escroquerie ; utile pour la sensibilisation des utilisateurs.
+    actif: true
+
+  - id: ncsc-uk
+    nom: NCSC (Royaume-Uni) — Publications
+    url: https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed.xml
+    type: rss
+    categorie: technique
+    sous_categorie: Recommandations
+    organisme: National Cyber Security Centre (UK)
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    justification: Agence nationale homologue de l'ANSSI ; guides et recommandations de sécurité.
+    actif: true
+
+  # ---- Éditeurs (pertinence pondérée par la présence dans le parc)
+  - id: msrc
+    nom: Microsoft — Security Update Guide
+    url: https://api.msrc.microsoft.com/update-guide/rss
+    type: rss
+    categorie: technique
+    sous_categorie: Éditeur — correctifs
+    organisme: Microsoft MSRC
+    nature: editeur
+    confiance: elevee
+    langue: en
+    frequence_minutes: 720
+    max_items: 150
+    technologies: [Microsoft, Windows, Exchange, Office, Edge, Azure, Entra]
+    justification: Source primaire des vulnérabilités et correctifs Microsoft (flux volumineux, limité aux 150 entrées les plus récentes).
+    actif: true
+
+  - id: cisco-psirt
+    nom: Cisco — Security Advisories
+    url: https://sec.cloudapps.cisco.com/security/center/psirtrss20/CiscoSecurityAdvisory.xml
+    type: rss
+    categorie: technique
+    sous_categorie: Éditeur — correctifs
+    organisme: Cisco PSIRT
+    nature: editeur
+    confiance: elevee
+    langue: en
+    frequence_minutes: 720
+    technologies: [Cisco]
+    justification: Avis de sécurité officiels Cisco (réseau, sécurité, collaboration).
+    actif: true
+
+  - id: fortinet-psirt
+    nom: Fortinet — PSIRT Advisories
+    url: https://filestore.fortinet.com/fortiguard/rss/ir.xml
+    type: rss
+    categorie: technique
+    sous_categorie: Éditeur — correctifs
+    organisme: Fortinet PSIRT
+    nature: editeur
+    confiance: elevee
+    langue: en
+    frequence_minutes: 720
+    technologies: [Fortinet, FortiGate, FortiOS]
+    justification: Avis officiels Fortinet ; équipements fréquemment ciblés en périmètre réseau.
+    actif: true
+
+  - id: ubuntu-usn
+    nom: Ubuntu — Security Notices
+    url: https://ubuntu.com/security/notices/rss.xml
+    type: rss
+    categorie: technique
+    sous_categorie: Éditeur — correctifs
+    organisme: Canonical
+    nature: editeur
+    confiance: elevee
+    langue: en
+    frequence_minutes: 720
+    technologies: [Ubuntu, Linux]
+    justification: Bulletins de sécurité officiels de la distribution Ubuntu.
+    actif: true
+
+  - id: debian-dsa
+    nom: Debian — Security Advisories (DSA)
+    url: https://www.debian.org/security/dsa
+    type: rss
+    categorie: technique
+    sous_categorie: Éditeur — correctifs
+    organisme: Projet Debian
+    nature: editeur
+    confiance: elevee
+    langue: en
+    frequence_minutes: 720
+    technologies: [Debian, Linux]
+    justification: Bulletins de sécurité officiels de Debian.
+    actif: true
+
+  # ---- Presse spécialisée et recherche
+  - id: bleepingcomputer
+    nom: BleepingComputer
+    url: https://www.bleepingcomputer.com/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Presse spécialisée
+    organisme: BleepingComputer
+    nature: presse_specialisee
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 120
+    justification: Actualité rapide sur les rançongiciels, incidents et vulnérabilités ; à recouper avec une source primaire.
+    actif: true
+
+  - id: thehackernews
+    nom: The Hacker News
+    url: https://feeds.feedburner.com/TheHackersNews
+    type: rss
+    categorie: technique
+    sous_categorie: Presse spécialisée
+    organisme: The Hacker News
+    nature: presse_specialisee
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 180
+    justification: Couverture large des menaces et vulnérabilités ; contenu parfois sponsorisé, à recouper.
+    actif: true
+
+  - id: sans-isc
+    nom: SANS Internet Storm Center — Diaries
+    url: https://isc.sans.edu/rssfeed_full.xml
+    type: rss
+    categorie: technique
+    sous_categorie: Analyse technique
+    organisme: SANS Institute
+    nature: recherche
+    confiance: elevee
+    langue: en
+    frequence_minutes: 360
+    justification: Analyses techniques quotidiennes par des incident handlers (observations terrain, détection).
+    actif: true
+
+  - id: krebs
+    nom: Krebs on Security
+    url: https://krebsonsecurity.com/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Journalisme d'investigation
+    organisme: Brian Krebs
+    nature: presse_specialisee
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    justification: Enquêtes sur la cybercriminalité et les incidents majeurs.
+    actif: true
+
+  - id: zataz
+    nom: ZATAZ
+    url: https://www.zataz.com/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Presse spécialisée (FR)
+    organisme: ZATAZ
+    nature: presse_specialisee
+    confiance: moyenne
+    langue: fr
+    frequence_minutes: 360
+    justification: Actualité francophone sur les fuites de données et la cybercriminalité ; à recouper.
+    actif: true
+
+  - id: welivesecurity-fr
+    nom: WeLiveSecurity (ESET) — FR
+    url: https://www.welivesecurity.com/fr/rss/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Recherche éditeur (FR)
+    organisme: ESET
+    nature: recherche
+    confiance: moyenne
+    langue: fr
+    frequence_minutes: 720
+    max_items: 40
+    justification: Recherches sur les logiciels malveillants en français ; source éditeur (biais commercial possible).
+    actif: true
+
+  - id: securityweek
+    nom: SecurityWeek
+    url: https://www.securityweek.com/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Presse spécialisée
+    organisme: SecurityWeek
+    nature: presse_specialisee
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 360
+    justification: Actualité vulnérabilités, ICS et réglementation.
+    actif: true
+
+  - id: unit42
+    nom: Palo Alto Networks — Unit 42
+    url: https://unit42.paloaltonetworks.com/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Renseignement sur la menace
+    organisme: Palo Alto Networks
+    nature: recherche
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 720
+    justification: Analyses de campagnes et de modes opératoires ; source éditeur.
+    actif: true
+
+  - id: talos
+    nom: Cisco Talos Intelligence
+    url: https://blog.talosintelligence.com/rss/
+    type: rss
+    categorie: technique
+    sous_categorie: Renseignement sur la menace
+    organisme: Cisco Talos
+    nature: recherche
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 720
+    justification: Recherche sur les menaces et vulnérabilités ; source éditeur.
+    actif: true
+
+  - id: securelist
+    nom: Securelist (Kaspersky GReAT)
+    url: https://securelist.com/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Renseignement sur la menace
+    organisme: Kaspersky
+    nature: recherche
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 720
+    justification: Analyses APT et logiciels malveillants ; à recouper (contexte géopolitique de l'éditeur).
+    actif: true
+
+  - id: dfir-report
+    nom: The DFIR Report
+    url: https://thedfirreport.com/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Retours d'expérience d'incidents
+    organisme: The DFIR Report
+    nature: recherche
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    justification: Retours d'expérience détaillés d'intrusions réelles (chaînes d'attaque, détections).
+    actif: true
+
+  - id: ms-security-blog
+    nom: Microsoft Security Blog
+    url: https://www.microsoft.com/en-us/security/blog/feed/
+    type: rss
+    categorie: technique
+    sous_categorie: Renseignement sur la menace
+    organisme: Microsoft
+    nature: editeur
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    technologies: [Microsoft, Windows, Entra, Defender]
+    justification: Renseignement sur la menace (Microsoft Threat Intelligence) et nouveautés sécurité.
+    actif: true
+
+  # ------------------------------------------------------------------ B. Veille réglementaire
+  - id: cnil
+    nom: CNIL — Actualités
+    url: https://www.cnil.fr/fr/rss.xml
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Protection des données (RGPD)
+    organisme: CNIL
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 720
+    justification: Autorité française de protection des données ; recommandations, sanctions, référentiels RGPD.
+    actif: true
+
+  - id: edpb
+    nom: EDPB — Actualités
+    url: https://www.edpb.europa.eu/feed/news_en
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Protection des données (UE)
+    organisme: Comité européen de la protection des données
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    justification: Lignes directrices et décisions contraignantes interprétant le RGPD au niveau européen.
+    actif: true
+
+  - id: eurlex-legislation
+    nom: EUR-Lex — Législation du Parlement et du Conseil (filtrée)
+    url: https://eur-lex.europa.eu/FR/display-feed.rss?rssId=162
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Textes européens adoptés
+    organisme: Office des publications de l'UE
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 1440
+    filtre_mots_cles: [cybersécurité, cyber, sécurité des réseaux, systèmes d'information, données à caractère personnel, protection des données, intelligence artificielle, résilience opérationnelle, numérique, identité électronique, services de confiance, cyberrésilience, 2022/2555, 2022/2554, 2024/1689, 2024/2847, 2016/679]
+    justification: >-
+      Source officielle des textes législatifs de l'UE (identifiant CELEX, date de publication).
+      Flux généraliste : un filtre par mots-clés ne conserve que les textes liés au numérique et à la sécurité.
+    actif: true
+
+  - id: eurlex-propositions
+    nom: EUR-Lex — Propositions de la Commission (filtrées)
+    url: https://eur-lex.europa.eu/FR/display-feed.rss?rssId=161
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Projets de textes européens
+    organisme: Office des publications de l'UE
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 1440
+    filtre_mots_cles: [cybersécurité, cyber, sécurité des réseaux, données à caractère personnel, protection des données, intelligence artificielle, résilience opérationnelle, numérique, identité électronique, cyberrésilience, omnibus]
+    justification: Propositions législatives (statut « projet ») permettant d'anticiper les évolutions réglementaires.
+    actif: true
+
+  - id: eurlex-jo-l
+    nom: EUR-Lex — Actes du Journal officiel série L (filtrés)
+    url: https://eur-lex.europa.eu/FR/display-feed.rss?rssId=222
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Actes publiés (dont actes d'exécution)
+    organisme: Office des publications de l'UE
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 1440
+    filtre_mots_cles: [cybersécurité, cyber, sécurité des réseaux, données à caractère personnel, intelligence artificielle, résilience opérationnelle, numérique, identité électronique, services de confiance, cyberrésilience, 2022/2555, 2022/2554, 2024/1689, 2024/2847]
+    justification: Actes publiés au JOUE, notamment les règlements d'exécution et délégués précisant NIS2, DORA, AI Act, CRA.
+    actif: true
+
+  - id: ai-act-service-desk
+    nom: Commission européenne — AI Act Service Desk
+    url: https://ai-act-service-desk.ec.europa.eu/en/rss.xml
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Intelligence artificielle (AI Act)
+    organisme: Commission européenne (AI Office)
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    justification: Point d'information officiel de la Commission sur la mise en œuvre du règlement IA.
+    actif: true
+
+  - id: ec-digital-strategy
+    nom: Commission européenne — Stratégie numérique (filtrée)
+    url: https://digital-strategy.ec.europa.eu/en/rss.xml
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Politique numérique de l'UE
+    organisme: Commission européenne (DG CONNECT)
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    filtre_mots_cles: [cyber, NIS2, NIS 2, AI Act, Artificial Intelligence Act, Cyber Resilience, CRA, eIDAS, Data Act, DORA, security, omnibus, certification]
+    justification: Annonces officielles (actes d'exécution, consultations, lignes directrices) sur NIS2, AI Act, CRA, eIDAS.
+    actif: true
+
+  - id: eba
+    nom: Autorité bancaire européenne (EBA) — Actualités (filtrées)
+    url: https://www.eba.europa.eu/rss.xml
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Secteur financier (DORA)
+    organisme: EBA
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    filtre_mots_cles: [DORA, ICT, cyber, operational resilience, third-party, outsourcing]
+    justification: Normes techniques et orientations liées à DORA pour le secteur financier.
+    actif: true
+
+  - id: aiact-fli
+    nom: artificialintelligenceact.eu (non officiel)
+    url: https://artificialintelligenceact.eu/feed/
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Intelligence artificielle (analyse)
+    organisme: Future of Life Institute
+    nature: communautaire
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    justification: Site d'analyse NON officiel du règlement IA, utile pour suivre les débats ; toute information doit être confirmée sur EUR-Lex.
+    actif: true
+
+  - id: legifrance
+    nom: Légifrance — Journal officiel (JORF)
+    url: https://www.legifrance.gouv.fr/
+    type: manuel
+    categorie: reglementaire
+    sous_categorie: Textes français
+    organisme: DILA
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 10080
+    statut_initial: bloque
+    justification: Source officielle des textes législatifs et réglementaires français (transposition NIS2, lois, décrets).
+    alternative: >-
+      Les flux RSS publics de Légifrance renvoient une page de vérification anti-robot (HTTP 403, Cloudflare) :
+      aucune collecte automatique n'est tentée. Alternatives : (1) API Légifrance officielle via le portail
+      PISTE (compte et identifiants OAuth requis, piste.gouv.fr) ; (2) consultation manuelle hebdomadaire et
+      saisie dans l'outil ; (3) suivi des textes européens via EUR-Lex.
+    actif: false
+
+  # ------------------------------------------------------------------ C. Veille normative
+  - id: iso-opendata
+    nom: ISO Open Data — Métadonnées des normes surveillées
+    url: https://isopublicstorageprod.blob.core.windows.net/opendata/_latest/iso_deliverables_metadata/json/iso_deliverables_metadata.jsonl
+    type: iso_opendata
+    categorie: normative
+    sous_categorie: Normes ISO/IEC (versions et statuts)
+    organisme: ISO
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 10080
+    max_octets: 150000000
+    references_surveillees: ["ISO/IEC 27001", "ISO/IEC 27002", "ISO/IEC 27005", "ISO/IEC 27701", "ISO/IEC 27017", "ISO/IEC 27018", "ISO/IEC 27035", "ISO/IEC 42001", "ISO 22301"]
+    justification: >-
+      Jeu de données ouvert publié par l'ISO (métadonnées : référence, titre, édition, stade, date de publication,
+      remplacements). Permet de détecter une nouvelle édition, un amendement ou une révision sans accéder au
+      texte des normes, qui reste payant et n'est jamais reproduit.
+    actif: true
+
+  - id: nist-cyber-insights
+    nom: NIST — Cybersecurity Insights (blog)
+    url: https://www.nist.gov/blogs/cybersecurity-insights/rss.xml
+    type: rss
+    categorie: normative
+    sous_categorie: NIST CSF et publications associées
+    organisme: NIST
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    justification: Annonces du NIST sur le Cybersecurity Framework, les SP 800, la cryptographie post-quantique et la sécurité de l'IA.
+    actif: true
+
+  - id: nist-news
+    nom: NIST — Actualités (filtrées sécurité)
+    url: https://www.nist.gov/news-events/news/rss.xml
+    type: rss
+    categorie: normative
+    sous_categorie: Publications NIST
+    organisme: NIST
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    filtre_mots_cles: [cyber, security, cryptograph, post-quantum, privacy, identity, AI, artificial intelligence, framework, SP 800, FIPS]
+    justification: Actualités officielles du NIST, filtrées sur la sécurité (normes FIPS, SP 800, PQC, IA).
+    actif: true
+
+  - id: anssi-publications
+    nom: ANSSI — Guides et publications (cyber.gouv.fr)
+    url: https://cyber.gouv.fr/publications
+    type: manuel
+    categorie: normative
+    sous_categorie: Guides et référentiels ANSSI
+    organisme: ANSSI
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 10080
+    statut_initial: bloque
+    justification: Guides d'hygiène, recommandations de configuration, référentiels (SecNumCloud, PASSI, etc.).
+    alternative: >-
+      Le site cyber.gouv.fr est protégé par un dispositif anti-robot (Incapsula) et ne fournit pas de flux RSS
+      exploitable : aucune collecte automatique n'est tentée. Alternatives : les flux CERT-FR (même organisme)
+      sont collectés automatiquement ; consultation manuelle mensuelle de la page des publications et saisie
+      des nouveautés dans l'outil.
+    actif: false
+
+  - id: openssf
+    nom: OpenSSF — Blog
+    url: https://openssf.org/feed/
+    type: rss
+    categorie: normative
+    sous_categorie: Référentiels chaîne logicielle (SLSA, Scorecard)
+    organisme: Open Source Security Foundation
+    nature: communautaire
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    justification: Référentiels de bonnes pratiques pour la sécurité de la chaîne d'approvisionnement logicielle (SLSA, SBOM).
+    actif: true
+
+  # ------------------------------------------------------------------ D. Veille technologique
+  - id: google-security-blog
+    nom: Google Online Security Blog
+    url: https://security.googleblog.com/feeds/posts/default
+    type: rss
+    categorie: technologique
+    sous_categorie: IA, cryptographie, sécurité des plateformes
+    organisme: Google
+    nature: editeur
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    justification: Innovations (post-quantique, sécurité de l'IA, mémoire sûre) publiées par les équipes sécurité de Google.
+    actif: true
+
+  - id: aws-security-blog
+    nom: AWS Security Blog
+    url: https://aws.amazon.com/blogs/security/feed/
+    type: rss
+    categorie: technologique
+    sous_categorie: Sécurité du cloud
+    organisme: Amazon Web Services
+    nature: editeur
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    technologies: [AWS]
+    justification: Nouveautés et bonnes pratiques de sécurité AWS (IAM, détection, chiffrement).
+    actif: true
+
+  - id: cloudflare-blog
+    nom: Cloudflare Blog
+    url: https://blog.cloudflare.com/rss/
+    type: rss
+    categorie: technologique
+    sous_categorie: Zero Trust, post-quantique, DDoS
+    organisme: Cloudflare
+    nature: editeur
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    justification: Retours techniques sur le déploiement post-quantique, le Zero Trust et les attaques DDoS.
+    actif: true
+
+  - id: kubernetes-blog
+    nom: Kubernetes Blog (filtré sécurité)
+    url: https://kubernetes.io/feed.xml
+    type: rss
+    categorie: technologique
+    sous_categorie: Conteneurs
+    organisme: CNCF / Kubernetes
+    nature: communautaire
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    filtre_mots_cles: [security, CVE, vulnerab, RBAC, policy, secret, supply chain, deprecat]
+    technologies: [Kubernetes]
+    justification: Annonces officielles du projet Kubernetes (fonctionnalités de sécurité, dépréciations).
+    actif: true
+
+  - id: cncf
+    nom: CNCF — Blog
+    url: https://www.cncf.io/feed/
+    type: rss
+    categorie: technologique
+    sous_categorie: Cloud natif
+    organisme: Cloud Native Computing Foundation
+    nature: communautaire
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    filtre_mots_cles: [security, zero trust, SBOM, supply chain, identity, policy, observability, AI]
+    justification: Tendances cloud natif (sécurité des conteneurs, identité des charges de travail, IA).
+    actif: true
+
+  - id: github-security-blog
+    nom: GitHub Blog — Security
+    url: https://github.blog/category/security/feed/
+    type: rss
+    categorie: technologique
+    sous_categorie: DevSecOps et dépendances
+    organisme: GitHub
+    nature: editeur
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    technologies: [GitHub]
+    justification: DevSecOps, sécurité des dépendances, analyse de code, gestion des secrets.
+    actif: true
+
+  - id: elastic-security-labs
+    nom: Elastic Security Labs
+    url: https://www.elastic.co/security-labs/rss/feed.xml
+    type: rss
+    categorie: technologique
+    sous_categorie: Détection (SIEM / EDR)
+    organisme: Elastic
+    nature: recherche
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    max_items: 40
+    justification: Recherches sur l'ingénierie de détection et les nouvelles techniques d'attaque.
+    actif: true
+
+  - id: crowdstrike-blog
+    nom: CrowdStrike Blog
+    url: https://www.crowdstrike.com/blog/feed/
+    type: rss
+    categorie: technologique
+    sous_categorie: EDR / XDR, IA
+    organisme: CrowdStrike
+    nature: editeur
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    justification: Tendances EDR/XDR et sécurité de l'IA ; source éditeur (biais commercial).
+    actif: true
+
+  - id: schneier
+    nom: Schneier on Security
+    url: https://www.schneier.com/feed/atom/
+    type: rss
+    categorie: technologique
+    sous_categorie: Cryptographie et politique de sécurité
+    organisme: Bruce Schneier
+    nature: recherche
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 1440
+    justification: Analyses d'expert reconnu en cryptographie et en politique de sécurité.
+    actif: true
+
+  # ------------------------------------------------------------------ Feedly (complémentaire, facultatif)
+  - id: feedly
+    nom: Feedly — Flux personnels (API officielle)
+    url: https://cloud.feedly.com/v3/streams/contents
+    type: feedly
+    categorie: technique
+    sous_categorie: Agrégateur personnel
+    organisme: Feedly
+    nature: communautaire
+    confiance: moyenne
+    langue: en
+    frequence_minutes: 360
+    max_items: 100
+    justification: >-
+      Source complémentaire facultative : agrège les flux suivis dans le compte Feedly de l'utilisateur.
+      La fiabilité dépend des flux d'origine (indiqués pour chaque article).
+    alternative: >-
+      Nécessite un jeton d'accès API officiel (variable FEEDLY_ACCESS_TOKEN), disponible selon l'offre Feedly.
+      Sans jeton : exporter ses abonnements en OPML depuis Feedly et les importer dans le catalogue
+      (page Sources) ; l'application les collecte alors directement en RSS. Voir docs/FEEDLY.md.
+    actif: false

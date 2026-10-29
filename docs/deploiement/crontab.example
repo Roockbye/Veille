@@ -1,0 +1,5 @@
+# Alternative sans service permanent (crontab -e). Adapter le chemin du projet.
+# Collecte + analyse toutes les heures (seules les sources « dues » selon leur fréquence sont interrogées) :
+0 * * * *  cd $HOME/Documents/Projets/Veille && .venv/bin/python -m veille collect >> data/logs/cron.log 2>&1
+# Rapport hebdomadaire le lundi à 7 h (7 derniers jours) :
+0 7 * * 1  cd $HOME/Documents/Projets/Veille && .venv/bin/python -m veille report --jours 7 >> data/logs/cron.log 2>&1

@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<rss version="2.0"><channel><title>Cassé</title>
+<item><title>Élément lisible malgré l'erreur</title><link>https://broken.test/a</link><description>Texte & non échappé</description></item>
+<item><title>Second élément</title><link>https://broken.test/b</link>
+</channel>

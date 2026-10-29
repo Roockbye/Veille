@@ -1,0 +1,27 @@
+# Interface + service de planification indépendant du navigateur.
+# Lancement : docker compose up -d --build   puis   http://localhost:8501
+services:
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:8501:8501"     # exposé uniquement sur la machine hôte
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      VEILLE_SCHEDULER_INTEGRE: "0"   # la planification est assurée par le service « scheduler »
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    restart: unless-stopped
+
+  scheduler:
+    build: .
+    command: ["python", "-m", "veille", "scheduler"]
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    restart: unless-stopped

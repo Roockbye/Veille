@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Atom de test</title>
+  <entry>
+    <title>Introducing post-quantum TLS by default</title>
+    <link href="https://atom.test/pqc"/>
+    <id>tag:atom.test,2026:1</id>
+    <updated>2026-10-28T08:00:00Z</updated>
+    <summary>We are rolling out ML-KEM hybrid key exchange.</summary>
+  </entry>
+</feed>
