@@ -38,4 +38,4 @@ Le domaine `cloud.feedly.com` est autorisé dans la liste blanche réseau, car i
   En cas d'échec, l'état de la source l'indique.
 - Les articles Feedly passent par l'agrégateur : la fiabilité dépend du flux d'origine, et la confiance de la source
   « Feedly » est donc fixée à « moyenne ».
-- Pour la démonstration, l'**import OPML** est l'option la plus simple et la plus robuste : il ne dépend d'aucun jeton.
+- Pour une présentation, l'**import OPML** est l'option la plus simple et la plus robuste : il ne dépend d'aucun jeton.

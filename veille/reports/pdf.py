@@ -90,6 +90,11 @@ def _link_para(url, style):
     return Paragraph(f"<link href='{escape(u, {chr(39): '%27'})}' color='blue'>{_clean(u)}</link>", style)
 
 
+def _links_para(cell: str, style):
+    parts = [safe_http_url(u) for u in cell.split()]
+    return Paragraph("<br/>".join(f"<link href='{escape(u, {chr(39): '%27'})}' color='blue'>{_clean(u)}</link>" for u in parts if u), style)
+
+
 def _title_color(title: str) -> str:
     for k, c in PRIO_COLORS.items():
         if title.startswith(f"[{k}]") or f"— {k}" in title:
@@ -110,7 +115,7 @@ def render_pdf(doc, path: Path) -> Path:
                       _para(b["subtitle"], st["cover_s"]), _para(b["org"], st["cover_o"]), Spacer(1, 1.2 * cm)]
             story += [_para(l, st["cover_l"]) for l in b["lines"]]
             if b["demo"]:
-                story.append(_para("DONNÉES DE DÉMONSTRATION — organisation fictive ; les éléments de veille "
+                story.append(_para("ORGANISATION FICTIVE (cas d'étude) — les éléments de veille "
                                    "présentés ont été réellement collectés.", st["demo"]))
             story.append(PageBreak())
         elif t in ("h1", "h2", "h3"):
@@ -131,7 +136,7 @@ def render_pdf(doc, path: Path) -> Path:
             small = st["small"]
             data = [[Paragraph(f"<font name='{st['bold']}' color='white'>{_clean(h)}</font>", small) for h in b["head"]]]
             for row in b["rows"]:
-                data.append([_link_para(c, small) if str(c).startswith(("http://", "https://")) else _para(c, small) for c in row])
+                data.append([_links_para(str(c), small) if str(c).startswith(("http://", "https://")) else _para(c, small) for c in row])
             tbl = Table(data, colWidths=widths, repeatRows=1)
             tbl.setStyle(TableStyle([
                 ("BACKGROUND", (0, 0), (-1, 0), NAVY), ("VALIGN", (0, 0), (-1, -1), "TOP"),

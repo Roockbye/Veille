@@ -1,9 +1,11 @@
 # Référentiel des textes réglementaires, normes et référentiels surveillés.
 #
 # IMPORTANT — nature de ces informations :
-#   Ce fichier est une BASE DE CONNAISSANCES de configuration, rédigée à partir des sources officielles
-#   citées (champ `references`). Elle n'est pas « collectée » : chaque rapport la présente comme telle et
-#   invite à revérifier les statuts et dates sur la source officielle (champ `verifie_le`).
+#   Ce fichier est une BASE DE CONNAISSANCES de configuration, rédigée à partir de la connaissance des textes
+#   et des sources officielles citées (champ `references`). Elle n'est pas « collectée » et ses dates n'ont PAS
+#   été vérifiées automatiquement (EUR-Lex et Légifrance refusent les clients automatisés) : chaque rapport
+#   la présente comme telle et invite à revérifier statuts et dates sur la source officielle.
+#   `revise_le` = date de dernière révision manuelle de la fiche.
 #   Les règles d'applicabilité produisent une ORIENTATION (« probable », « à qualifier »...), jamais une
 #   conclusion juridique : l'applicabilité doit être confirmée par le juriste, le DPO ou le RSSI.
 #
@@ -29,7 +31,7 @@ textes:
       - {date: "2018-05-25", libelle: Entrée en application}
     references:
       - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Tout organisme qui traite des données à caractère personnel (responsable de traitement ou sous-traitant) établi dans l'UE ou ciblant des personnes dans l'UE.
     obligations_possibles:
       - Tenue du registre des traitements (art. 30)
@@ -56,7 +58,7 @@ textes:
     reference: Directive (UE) 2022/2555 ; règlement d'exécution (UE) 2024/2690
     nature_juridique: obligation_legale
     type_veille: reglementaire
-    mots_cles: [NIS2, NIS 2, "2022/2555", "2024/2690", entités essentielles, entités importantes, essential entities, important entities, directive NIS, résilience des infrastructures critiques]
+    mots_cles: [NIS2, NIS 2, "2022/2555", "2024/2690", entités essentielles, entités importantes, essential entities, important entities, directive NIS, résilience des infrastructures critiques, renforcement de la cybersécurité]
     statut: adopte_transposition_a_verifier
     dates:
       - {date: "2022-12-27", libelle: Publication au JOUE}
@@ -66,11 +68,13 @@ textes:
       - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022L2555
       - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R2690
       - https://monespacenis2.cyber.gouv.fr/
-    verifie_le: "2026-10-29"
+      - https://www.senat.fr/
+    revise_le: "2026-10-31"
     note_statut: >-
-      En France, la transposition passe par la loi relative à la résilience des infrastructures critiques et au
-      renforcement de la cybersécurité et ses décrets d'application : le statut de publication et les dates
-      d'entrée en vigueur nationales sont à vérifier sur Légifrance et sur le site de l'ANSSI.
+      En France, la transposition passe par le projet de loi relatif à la résilience des infrastructures critiques
+      et au renforcement de la cybersécurité, toujours en discussion au Parlement selon les informations disponibles
+      en octobre 2026 ; point à suivre (flux du Sénat collectés), puis décrets d'application. Statut et dates
+      nationales à vérifier sur Légifrance et sur le site de l'ANSSI.
     concernes: >-
       Entités moyennes et grandes (≥ 50 salariés ou CA/bilan > 10 M€) des secteurs des annexes I et II
       (énergie, transports, banque, santé, eau, infrastructures numériques, gestion des services TIC B2B,
@@ -94,7 +98,10 @@ textes:
         - si: {secteurs: [energie, transports, banque, infrastructures_marches_financiers, sante, eau, infrastructure_numerique, services_tic_b2b, administration_publique, espace, postal, dechets, chimie, alimentaire, fabrication, fournisseurs_numeriques, recherche, collectivite]}
           resultat: a_qualifier
           motif: Secteur visé mais taille sous le seuil ou à préciser ; des exceptions indépendantes de la taille existent.
-        - si: {roles: [fournisseur_administration, prestataire_tic_secteur_financier]}
+        - si: {secteurs: [aeronautique]}
+          resultat: a_qualifier
+          motif: "Filière aéronautique : la fabrication de matériels de transport relève de l'annexe II, mais un bureau d'études n'y est a priori pas visé directement ; ses clients peuvent l'être et répercuter leurs obligations (sécurité de la chaîne d'approvisionnement). À qualifier avec le simulateur de l'ANSSI."
+        - si: {roles: [fournisseur_administration, prestataire_tic_secteur_financier, fournisseur_entite_nis2]}
           resultat: indirect
           motif: Les clients assujettis peuvent imposer des exigences contractuelles (sécurité de la chaîne d'approvisionnement).
       defaut: {resultat: peu_probable, motif: "Secteur déclaré hors annexes NIS 2 ; impact indirect possible via les clients assujettis."}
@@ -111,7 +118,7 @@ textes:
       - {date: "2025-01-17", libelle: Entrée en application}
     references:
       - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022R2554
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Entités financières (banques, assurances, entreprises d'investissement, prestataires de crypto-actifs...) et, indirectement, leurs prestataires de services TIC.
     obligations_possibles:
       - Cadre de gestion du risque lié aux TIC
@@ -148,7 +155,7 @@ textes:
     references:
       - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R1689
       - https://ai-act-service-desk.ec.europa.eu/
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     note_statut: >-
       Le calendrier d'application de certaines obligations (notamment haut risque) a fait l'objet de propositions
       de modification par la Commission (« omnibus numérique », 2025). Les dates ci-dessus sont celles du texte
@@ -187,7 +194,7 @@ textes:
       - {date: "2027-12-11", libelle: Application générale}
     references:
       - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R2847
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Fabricants, importateurs et distributeurs de produits matériels et logiciels comportant des éléments numériques mis sur le marché de l'UE.
     obligations_possibles:
       - Exigences essentielles de cybersécurité dès la conception
@@ -215,7 +222,7 @@ textes:
       - {date: "2024-05-20", libelle: Entrée en vigueur}
     references:
       - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R1183
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Prestataires de services de confiance, émetteurs de portefeuilles, parties utilisatrices de certains secteurs.
     obligations_possibles:
       - Acceptation du portefeuille européen d'identité numérique pour certaines parties utilisatrices
@@ -239,7 +246,7 @@ textes:
     dates: []
     references:
       - https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006071307/LEGISCTA000028344696/
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Opérateurs désignés comme d'importance vitale par l'État (désignation notifiée, non publique).
     obligations_possibles:
       - Règles de sécurité des SIIV fixées par arrêtés sectoriels
@@ -263,7 +270,7 @@ textes:
     dates: []
     references:
       - https://esante.gouv.fr/produits-services/hds
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Toute personne qui héberge des données de santé à caractère personnel pour le compte de tiers.
     obligations_possibles:
       - Certification HDS de l'hébergeur (référentiel s'appuyant notamment sur ISO/IEC 27001)
@@ -290,7 +297,7 @@ textes:
       - {date: "2025-03-31", libelle: Exigences « future-dated » de la v4.0 devenues obligatoires}
     references:
       - https://www.pcisecuritystandards.org/document_library/
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Organisations qui stockent, traitent ou transmettent des données de cartes de paiement (exigence imposée par contrat via les acquéreurs).
     obligations_possibles:
       - Conformité PCI DSS selon le niveau marchand et le périmètre (CDE)
@@ -319,7 +326,7 @@ textes:
       - {date: "2025-10-31", libelle: Fin de la période de transition des certifications 2013 vers 2022 (IAF)}
     references:
       - https://www.iso.org/standard/27001
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Toute organisation souhaitant structurer ou certifier son SMSI. Norme volontaire, exigible seulement par contrat, appel d'offres ou référentiel qui la rend obligatoire (ex. HDS).
     obligations_possibles: []
     demarches_applicabilite:
@@ -342,7 +349,7 @@ textes:
       - {date: "2022-02-15", libelle: Publication de l'édition 2022}
     references:
       - https://www.iso.org/standard/75652.html
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Recueil de recommandations de mesures (93 mesures en 4 thèmes) ; guide de mise en œuvre de l'annexe A de l'ISO/IEC 27001.
     obligations_possibles: []
     demarches_applicabilite:
@@ -365,7 +372,7 @@ textes:
       - {date: "2023-12-18", libelle: Publication}
     references:
       - https://www.iso.org/standard/81230.html
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Organisations qui développent ou utilisent des systèmes d'IA et souhaitent en encadrer la gouvernance.
     obligations_possibles: []
     demarches_applicabilite:
@@ -388,7 +395,7 @@ textes:
       - {date: "2024-02-26", libelle: Publication du CSF 2.0}
     references:
       - https://www.nist.gov/cyberframework
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Référentiel volontaire utilisable par toute organisation (fonctions Gouverner, Identifier, Protéger, Détecter, Répondre, Rétablir).
     obligations_possibles: []
     demarches_applicabilite:
@@ -410,7 +417,7 @@ textes:
     dates: []
     references:
       - https://cyber.gouv.fr/publications/guide-dhygiene-informatique
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Toute organisation ; recommandations non contraignantes, sauf lorsqu'un texte ou un contrat y renvoie.
     obligations_possibles: []
     demarches_applicabilite:
@@ -429,7 +436,7 @@ textes:
     dates: []
     references:
       - https://cyber.gouv.fr/secnumcloud-pour-les-fournisseurs-de-services-cloud
-    verifie_le: "2026-10-29"
+    revise_le: "2026-10-31"
     concernes: Prestataires cloud visant la qualification ; clients (notamment publics) pouvant l'exiger contractuellement.
     obligations_possibles: []
     demarches_applicabilite:
@@ -440,3 +447,122 @@ textes:
           resultat: a_qualifier
           motif: "Prestataire numérique travaillant pour l'administration : exigence possible dans les marchés publics."
       defaut: {resultat: peu_probable, motif: "Pas d'activité d'hébergement cloud pour des clients publics déclarée."}
+
+  # ----------------------------------------------------------------- Filière aéronautique
+  - id: aircyber
+    nom: AirCyber — Référentiel de maturité cyber de la filière aéronautique
+    reference: Programme AirCyber (BoostAeroSpace) — niveaux Bronze, Silver, Gold
+    nature_juridique: exigence_contractuelle
+    type_veille: normative
+    mots_cles: [AirCyber, BoostAeroSpace, Boost AeroSpace, Cyber Boost, maturité cyber des fournisseurs, supply chain cybersecurity, aerospace supply chain]
+    statut: publie
+    dates: []
+    references:
+      - https://boostaerospace.com/aircyber/
+    revise_le: "2026-10-31"
+    concernes: Fournisseurs de la filière aéronautique auxquels les donneurs d'ordre imposent une évaluation de maturité cyber.
+    obligations_possibles:
+      - Atteindre le niveau de maturité exigé contractuellement (évaluation par BoostAeroSpace)
+      - Maintenir le niveau et progresser vers le niveau supérieur selon le calendrier des clients
+    demarches_applicabilite:
+      - Recenser les clauses AirCyber des contrats clients (niveau, échéance, modalités d'évaluation)
+      - Réaliser une auto-évaluation par rapport aux exigences du niveau visé
+    applicabilite:
+      regles:
+        - si: {exigence: [aircyber]}
+          resultat: probable
+          motif: Niveau AirCyber exigé contractuellement par des clients de l'organisation.
+        - si: {secteurs: [aeronautique]}
+          resultat: a_qualifier
+          motif: "Fournisseur de la filière aéronautique : exigence AirCyber possible chez les donneurs d'ordre."
+      defaut: {resultat: peu_probable, motif: "Pas d'activité dans la filière aéronautique déclarée."}
+
+  - id: en9100
+    nom: EN 9100 — Management de la qualité (aéronautique, spatial, défense)
+    reference: EN 9100:2018 (série 9100 de l'IAQG)
+    nature_juridique: norme
+    type_veille: normative
+    mots_cles: [EN 9100, AS9100, "9100:2018", IAQG, management de la qualité aéronautique, gestion de configuration]
+    statut: publie
+    dates: []
+    references:
+      - https://iaqg.org/
+    revise_le: "2026-10-31"
+    note_statut: Suivre les annonces de l'IAQG concernant une éventuelle révision de la série 9100.
+    concernes: Organisations de la chaîne d'approvisionnement aéronautique ; norme volontaire, exigée contractuellement par les donneurs d'ordre.
+    obligations_possibles:
+      - Maîtrise documentaire, gestion de configuration et traçabilité (exigences de certification)
+    demarches_applicabilite:
+      - Vérifier les exigences de sécurité de l'information liées à la maîtrise documentaire lors de l'audit annuel
+    applicabilite:
+      regles:
+        - si: {exigence: [en9100]}
+          resultat: probable
+          motif: Certification EN 9100 détenue ou exigée par les clients.
+        - si: {secteurs: [aeronautique]}
+          resultat: a_qualifier
+          motif: Norme qualité de référence de la filière aéronautique.
+      defaut: {resultat: peu_probable, motif: "Pas d'activité aéronautique déclarée."}
+
+  - id: double_usage
+    nom: Contrôle des exportations de biens à double usage
+    reference: Règlement (UE) 2021/821
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [double usage, dual-use, "2021/821", contrôle des exportations, export control, biens sensibles, SBDU, transfert de technologie]
+    statut: applicable
+    dates:
+      - {date: "2021-09-09", libelle: "Entrée en vigueur (à vérifier sur EUR-Lex)"}
+    references:
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021R0821
+      - https://www.entreprises.gouv.fr/
+    revise_le: "2026-10-31"
+    concernes: Organisations qui exportent ou transfèrent (y compris sous forme immatérielle, par exemple des fichiers ou un accès distant) des biens, logiciels ou technologies listés.
+    obligations_possibles:
+      - Classer les données techniques et identifier celles relevant de la liste des biens à double usage
+      - Obtenir une licence avant tout transfert hors UE concerné (y compris accès à distance, stockage cloud hors UE)
+    demarches_applicabilite:
+      - Vérifier projet par projet, avec le client, si les données techniques relèvent du contrôle
+      - Contrôler la localisation des stockages et des accès distants (prestataires, indépendants, cloud)
+    applicabilite:
+      regles:
+        - si: {donnees: [donnees_double_usage]}
+          resultat: a_qualifier
+          motif: "Des données techniques potentiellement soumises au contrôle sont traitées : vérification projet par projet."
+        - si: {secteurs: [aeronautique]}
+          resultat: a_qualifier
+          motif: Certaines données techniques aéronautiques peuvent relever du double usage, même hors défense.
+      defaut: {resultat: peu_probable, motif: "Aucune donnée technique sensible déclarée."}
+
+  - id: part_is
+    nom: Part-IS — Sécurité de l'information dans l'aviation (EASA)
+    reference: Règlement délégué (UE) 2022/1645 et règlement d'exécution (UE) 2023/203
+    nature_juridique: obligation_legale
+    type_veille: reglementaire
+    mots_cles: [Part-IS, "2022/1645", "2023/203", information security in aviation, sécurité de l'information aviation, EASA cybersecurity]
+    statut: applicable_progressivement
+    dates:
+      - {date: "2025-10-16", libelle: "Application aux organismes de conception et de production (2022/1645) — à vérifier"}
+      - {date: "2026-02-22", libelle: "Application aux autres organismes visés (2023/203) — à vérifier"}
+    references:
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022R1645
+      - https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R0203
+      - https://www.easa.europa.eu/
+    revise_le: "2026-10-31"
+    note_statut: Dates rédigées à partir de la connaissance du texte, non vérifiées automatiquement (EUR-Lex inaccessible aux clients automatisés) ; à confirmer sur EUR-Lex.
+    concernes: Organismes agréés par l'EASA ou une autorité nationale (conception, production, maintenance, exploitation...).
+    obligations_possibles:
+      - Système de management de la sécurité de l'information et gestion des risques cyber
+      - Signalement des incidents de sécurité de l'information
+    demarches_applicabilite:
+      - Vérifier si l'organisation détient un agrément (DOA, POA...) ou travaille sous l'agrément de ses clients
+      - Recenser les exigences Part-IS répercutées contractuellement par les clients agréés
+    applicabilite:
+      regles:
+        - si: {roles: [titulaire_agrement_easa]}
+          resultat: probable
+          motif: L'organisation déclare détenir un agrément aéronautique.
+        - si: {secteurs: [aeronautique]}
+          resultat: indirect
+          motif: "Sous-traitant d'organismes agréés : exigences de sécurité de l'information répercutées possibles."
+      defaut: {resultat: peu_probable, motif: "Aucune activité aéronautique déclarée."}

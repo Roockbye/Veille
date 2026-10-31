@@ -53,6 +53,18 @@ THEME_GUIDE = {
         "risques": "Bruit des outils, ralentissement des pipelines, dépendances compromises.",
         "prerequis": "Chaîne CI/CD maîtrisée, politique de correction des dépendances, responsabilités définies.",
     },
+    "sauvegarde_continuite": {
+        "usages": "Sauvegardes immuables ou hors ligne (règle 3-2-1), tests de restauration planifiés, plan de reprise d'activité.",
+        "benefices": "Capacité à redémarrer après un rançongiciel ; exigence fréquente des assureurs cyber ; objectifs RTO/RPO mesurables.",
+        "risques": "Sauvegardes chiffrées avec la production si elles sont joignables depuis le domaine ; restauration jamais testée ; coût du stockage.",
+        "prerequis": "Objectifs RTO/RPO validés par la direction, isolation des sauvegardes (compte et réseau dédiés), procédure et calendrier de tests.",
+    },
+    "messagerie_hameconnage": {
+        "usages": "MFA résistante à l'hameçonnage, accès conditionnel, filtrage avancé de la messagerie, DMARC/DKIM/SPF, exercices d'hameçonnage.",
+        "benefices": "Réduction du risque de compromission de comptes et d'usurpation auprès des clients.",
+        "risques": "Contournement par proxy (AiTM) des MFA classiques, faux positifs du filtrage, lassitude des utilisateurs.",
+        "prerequis": "Inventaire des comptes et des applications, politique d'accès conditionnel, plan de sensibilisation, procédure de signalement.",
+    },
     "detection_remediation": {
         "usages": "Ingénierie de détection (règles Sigma), gestion de l'exposition, leurres, durcissement guidé.",
         "benefices": "Détection adaptée aux menaces réelles, priorisation de la remédiation.",

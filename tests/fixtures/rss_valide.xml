@@ -4,11 +4,11 @@
   <title>Flux de test (données de test, non collectées)</title>
   <link>https://example-feed.test/</link>
   <item>
-    <title>Vulnérabilité critique dans Fortinet FortiOS activement exploitée (CVE-2099-0001)</title>
+    <title>Vulnérabilité critique dans Microsoft Windows Server (Netlogon) activement exploitée (CVE-2099-0001)</title>
     <link>https://example-feed.test/avis/1?utm_source=rss&amp;utm_medium=feed</link>
     <pubDate>Tue, 27 Oct 2026 10:00:00 GMT</pubDate>
     <author>analyste@example-feed.test (Jean Test)</author>
-    <description><![CDATA[<p>Une vulnérabilité permet une <b>exécution de code arbitraire</b> à distance sur FortiOS 7.4.</p><script>alert('x')</script>]]></description>
+    <description><![CDATA[<p>Une vulnérabilité permet une <b>élévation de privilèges</b> sur un contrôleur de domaine Active Directory.</p><script>alert('x')</script>]]></description>
   </item>
   <item>
     <title>Webinaire sponsorisé : gagnez un cadeau</title>

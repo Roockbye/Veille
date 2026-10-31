@@ -28,6 +28,8 @@ SECTEURS = {
     "commerce": "Commerce et distribution",
     "education": "Enseignement",
     "services": "Services aux entreprises (conseil, ESN)",
+    "ingenierie": "Ingénierie / bureau d'études",
+    "aeronautique": "Aéronautique et spatial (filière)",
     "industrie_autre": "Autre industrie",
     "association": "Association",
     "autre": "Autre",
@@ -59,6 +61,9 @@ ROLES = {
     "operateur_importance_vitale": "Opérateur d'importance vitale (OIV) désigné",
     "prestataire_services_confiance": "Prestataire de services de confiance (eIDAS)",
     "fournisseur_administration": "Fournisseur de l'administration / marchés publics",
+    "fournisseur_entite_nis2": "Fournisseur ou sous-traitant d'entités potentiellement soumises à NIS 2",
+    "titulaire_agrement_easa": "Titulaire d'un agrément aéronautique (DOA, POA...)",
+    "depositaire_donnees_clients": "Dépositaire de données confidentielles de clients (plans, maquettes)",
 }
 DONNEES = {
     "donnees_personnelles": "Données personnelles (général)",
@@ -69,6 +74,23 @@ DONNEES = {
     "donnees_sensibles_rgpd": "Autres données sensibles (art. 9 RGPD)",
     "propriete_intellectuelle": "Propriété intellectuelle / secrets d'affaires",
     "donnees_classifiees": "Informations classifiées ou Diffusion Restreinte",
+    "donnees_double_usage": "Données techniques potentiellement soumises au contrôle export (double usage)",
+}
+GESTIONS = {"interne": "Équipe IT interne", "infogerant": "Infogérant", "editeur_saas": "Éditeur / fournisseur SaaS ou cloud",
+            "inconnu": "Non précisé"}
+ROLES_RESPONSABLES = {
+    "securite": "Pilotage sécurité (RSSI ou référent)",
+    "exploitation": "Exploitation / infrastructure",
+    "infogerant": "Infogérant",
+    "supervision": "Supervision / détection",
+    "juridique": "Juridique / DPO",
+    "qualite": "Qualité / conformité",
+    "direction": "Direction",
+}
+RESPONSABLES_DEFAUT = {
+    "securite": "RSSI", "exploitation": "Équipe infrastructure / exploitation", "infogerant": "Infogérant",
+    "supervision": "Équipe de supervision (SOC)", "juridique": "Juriste / DPO", "qualite": "Responsable qualité",
+    "direction": "Direction",
 }
 CATEGORIES_TECH = {
     "systeme": "Système d'exploitation serveur", "poste_de_travail": "Poste de travail", "serveur": "Serveur / service",
@@ -117,8 +139,11 @@ def load_demo_profile() -> dict:
 
 def normalize_profile(p: dict) -> dict:
     p = dict(p or {})
+    if "demonstration" in p and "fictive" not in p:
+        p["fictive"] = p.pop("demonstration")
     for k in ("secteurs_secondaires", "roles", "activites", "donnees_traitees", "technologies",
-              "contraintes_securite", "risques_connus", "exigences", "themes_veille"):
+              "contraintes_securite", "risques_connus", "exigences", "themes_veille", "scenarios_redoutes",
+              "besoins_securite", "echeances", "parties_prenantes"):
         p[k] = list(p.get(k) or [])
     techs = []
     for t in p["technologies"]:
@@ -133,6 +158,8 @@ def normalize_profile(p: dict) -> dict:
         t.setdefault("categorie", "autre")
         t["exposition"] = t.get("exposition") or "inconnue"
         t["criticite"] = t.get("criticite") or "moyenne"
+        t["gestion"] = t.get("gestion") or "interne"
+        t["exclusions"] = [str(x) for x in t.get("exclusions") or [] if str(x).strip()]
         techs.append(t)
     p["technologies"] = techs
     exig = []
@@ -142,6 +169,17 @@ def normalize_profile(p: dict) -> dict:
         exig.append({"id": e.get("id"), "nom": e.get("nom") or e.get("id") or "", "type": e.get("type", "legale"),
                      "statut": e.get("statut", "a_confirmer"), "commentaire": e.get("commentaire", "")})
     p["exigences"] = exig
+    p["responsables"] = {**RESPONSABLES_DEFAUT, **{k: v for k, v in (p.get("responsables") or {}).items() if v}}
+    sc = []
+    for x in p["scenarios_redoutes"]:
+        if isinstance(x, str):
+            x = {"nom": x, "mots_cles": []}
+        if str(x.get("nom") or "").strip():
+            sc.append({"nom": str(x["nom"]).strip(), "description": x.get("description") or "",
+                       "mots_cles": [str(m) for m in x.get("mots_cles") or [] if str(m).strip()]})
+    p["scenarios_redoutes"] = sc
+    p["echeances"] = [{"date": str(e.get("date") or ""), "libelle": e.get("libelle") or "", "origine": e.get("origine") or ""}
+                      for e in p["echeances"] if isinstance(e, dict) and (e.get("libelle") or e.get("date"))]
     return p
 
 
@@ -185,9 +223,9 @@ def missing_fields(p: dict) -> list[str]:
 def hypotheses(p: dict) -> list[str]:
     """Hypothèses explicites utilisées tant que le profil est incomplet (affichées dans l'interface et le rapport)."""
     h = []
-    if p.get("demonstration"):
-        h.append("Profil de DÉMONSTRATION (organisation fictive) : les analyses d'impact illustrent la méthode "
-                 "et doivent être refaites avec le profil réel.")
+    if p.get("fictive"):
+        h.append("Organisation FICTIVE (cas d'étude) : les éléments de veille sont réellement collectés, mais le "
+                 "contexte, l'inventaire et les chiffres de l'organisation sont inventés.")
     if not p.get("secteur"):
         h.append("Secteur non renseigné : l'applicabilité des textes sectoriels (NIS 2, DORA...) est « à qualifier ».")
     if not p.get("taille"):
@@ -199,6 +237,10 @@ def hypotheses(p: dict) -> list[str]:
         if any(t.get("exposition") == "inconnue" for t in p["technologies"]):
             h.append("Exposition inconnue pour certaines technologies : elles sont traitées comme non exposées "
                      "à Internet (hypothèse à confirmer).")
+        unknown_vendor = [t["nom"] for t in p["technologies"] if t.get("marque_inconnue")]
+        if unknown_vendor:
+            h.append("Marque ou modèle non précisé pour : " + ", ".join(unknown_vendor) + ". La détection repose sur des "
+                     "mots-clés génériques : toute vulnérabilité d'un produit de ce type est à vérifier auprès du gestionnaire.")
         if any(not t.get("versions") for t in p["technologies"]):
             h.append("Versions non renseignées pour certaines technologies : la correspondance porte sur le produit, "
                      "pas sur la version affectée (vérification manuelle nécessaire).")
@@ -206,6 +248,8 @@ def hypotheses(p: dict) -> list[str]:
         h.append("Données traitées non renseignées : traitement de données personnelles supposé (cas général), à confirmer.")
     if not p.get("themes_veille"):
         h.append("Thèmes technologiques non choisis : tous les thèmes sont surveillés par défaut.")
+    if not p.get("scenarios_redoutes"):
+        h.append("Aucun scénario redouté déclaré : les éléments ne sont pas rapprochés des risques majeurs de l'organisation.")
     if not p.get("maturite_cyber"):
         h.append("Maturité non renseignée : niveau 2 « reproductible » supposé pour proportionner les recommandations.")
     return h

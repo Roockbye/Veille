@@ -80,7 +80,7 @@ def _cond_ok(cond: dict, p: dict) -> tuple[bool, list[str]]:
         elif not set(p["donnees_traitees"]) & set(cond["donnees"]):
             return False, missing
     if "exigence" in cond:
-        ids = {(e.get("id") or "").lower() for e in p.get("exigences") or []}
+        ids = {(e.get("id") or "").lower() for e in p.get("exigences") or [] if e.get("statut") != "cible"}
         if not ids & set(cond["exigence"]):
             return False, missing
     return (not missing), missing
@@ -105,6 +105,11 @@ def evaluate_applicability(ref: dict, profile: dict) -> dict:
         else:
             d = (ref.get("applicabilite") or {}).get("defaut") or {"resultat": "a_qualifier", "motif": ""}
             result = {"resultat": d["resultat"], "motif": d.get("motif", "")}
+    if declared and declared.get("statut") == "cible":
+        result = {"resultat": "a_qualifier",
+                  "motif": "Non exigé : retenu par l'organisation comme référentiel de bonnes pratiques et cible à long terme."
+                           + (f" ({declared['commentaire']})" if declared.get("commentaire") else "")}
+        declared = None
     if declared:
         statut = "identifiée" if declared.get("statut") == "identifiee" else "à confirmer"
         result["motif"] += f" L'organisation a déclaré cette exigence ({statut})."
@@ -124,7 +129,7 @@ def applicability_matrix(profile: dict) -> list[dict]:
                      "type_veille": ref.get("type_veille"), **ev,
                      "statut": STATUTS.get(ref.get("statut"), ref.get("statut")),
                      "note_statut": ref.get("note_statut"), "dates": ref.get("dates") or [],
-                     "references": ref.get("references") or [], "verifie_le": ref.get("verifie_le"),
+                     "references": ref.get("references") or [], "revise_le": ref.get("revise_le"),
                      "obligations_possibles": ref.get("obligations_possibles") or [],
                      "demarches_applicabilite": ref.get("demarches_applicabilite") or [],
                      "concernes": ref.get("concernes")})

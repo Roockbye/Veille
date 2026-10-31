@@ -51,7 +51,7 @@ def make_fetcher(routes: dict, allowed: set, resolver=public_resolver, **kw):
 
 
 @pytest.fixture
-def demo_profile():
+def profil():
     from veille.organisation import load_demo_profile
     return load_demo_profile()
 

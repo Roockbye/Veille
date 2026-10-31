@@ -86,8 +86,8 @@ def page_header(title: str, caption: str | None = None) -> None:
     if caption:
         st.caption(caption)
     if not has_profile():
-        st.info("Profil d'organisation non configuré : le **profil de démonstration (organisation fictive)** est utilisé. "
-                "Configurez votre organisation dans la page *Configuration*.", icon="ℹ️")
+        st.info("Profil d'organisation non enregistré : le **profil d'exemple (AéroStar, organisation fictive)** est utilisé. "
+                "Vérifiez-le et enregistrez-le dans la page *Configuration*.", icon="ℹ️")
 
 
 def show_hypotheses(p: dict) -> None:
@@ -135,9 +135,14 @@ def render_fiche(storage: Storage, art: dict, key_prefix: str = "f") -> None:
     st.write(art.get("resume_fr") or "—")
     tabs = st.tabs(["Analyse", "Priorisation", "Recommandations", "Réglementaire / normatif", "Texte source", "Traitement"])
     with tabs[0]:
+        if art.get("scenarios"):
+            st.warning("**Scénario(s) redouté(s) concerné(s)** : " + "; ".join(
+                f"{esc(x['nom'])} _(indices : {esc(', '.join(x['declencheurs']))})_" for x in art["scenarios"]))
         if art.get("technologies"):
             st.markdown("**Technologies du parc concernées**")
             st.dataframe(pd.DataFrame([{"Technologie": t["nom"], "Exposition": t["exposition"], "Criticité": t["criticite"],
+                                        "Gestion": t.get("gestion", "—"),
+                                        "Marque connue": "non — à confirmer" if t.get("marque_inconnue") else "oui",
                                         "Versions du parc": ", ".join(t["versions_parc"]),
                                         "Versions citées": ", ".join(t["versions_citees"]) or "—"} for t in art["technologies"]]),
                          hide_index=True, width="stretch")

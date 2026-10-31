@@ -11,35 +11,36 @@ from veille.reports.markdown import esc
 from veille.scheduler import report_period
 
 
-def _seed(storage, demo_profile, monkeypatch):
+def _seed(storage, profil, monkeypatch):
     import veille.pipeline as pl
     from veille.collector import collect
     storage.upsert_source({"id": "t", "nom": "Flux test", "url": "https://feeds.test/rss", "type": "rss", "categorie": "technique",
                            "confiance": "elevee", "frequence_minutes": 60, "actif": True, "langue": "fr", "options": {},
                            "justification": "test"})
     collect(storage, fetcher=make_fetcher({"/rss": (200, fixture_bytes("rss_valide.xml"))}, {"feeds.test"}), only_due=False)
-    monkeypatch.setattr(pl, "current_profile", lambda: demo_profile)
-    pl.analyze_articles(storage, profile=demo_profile)
+    monkeypatch.setattr(pl, "current_profile", lambda: profil)
+    pl.analyze_articles(storage, profile=profil)
     from veille.actions import sync_actions
     sync_actions(storage)
 
 
-def test_rapport_md_pdf_complet(storage, demo_profile, monkeypatch, tmp_path):
-    _seed(storage, demo_profile, monkeypatch)
-    res = generate_report(storage, date.today() - timedelta(days=7), date.today(), output_dir=tmp_path, profile=demo_profile)
+def test_rapport_md_pdf_complet(storage, profil, monkeypatch, tmp_path):
+    _seed(storage, profil, monkeypatch)
+    res = generate_report(storage, date.today() - timedelta(days=7), date.today(), output_dir=tmp_path, profile=profil)
     md = res["chemin_md"].read_text(encoding="utf-8")
     for title in ["Résumé exécutif", "Objectifs et périmètre", "Méthodologie", "Justification des outils", "Catalogue des sources",
                   "veille technique", "Menaces et vulnérabilités", "Évolutions technologiques", "Veille réglementaire",
                   "Veille normative", "Analyse des impacts", "Obligations potentielles", "Opportunités", "Plan d'action",
                   "Limites", "Conclusion", "Annexes"]:
         assert title in md, title
-    assert "DÉMONSTRATION" in md and "https://example-feed.test/avis/1" in md
+    assert "ORGANISATION FICTIVE" in md and "https://example-feed.test/avis/1" in md
+    assert "Compétence visée" not in md and "Scénarios redoutés" in md and "AirCyber Bronze" in md and "Engagements propres" in md
     assert res["chemin_pdf"].read_bytes()[:4] == b"%PDF"
     assert storage.list_reports()[0]["nb_articles"] == res["nb_articles"]
 
 
-def test_rapport_vide_ne_fabrique_rien(storage, demo_profile, tmp_path):
-    res = generate_report(storage, date(2020, 1, 1), date(2020, 1, 7), output_dir=tmp_path, profile=demo_profile, formats=["md"])
+def test_rapport_vide_ne_fabrique_rien(storage, profil, tmp_path):
+    res = generate_report(storage, date(2020, 1, 1), date(2020, 1, 7), output_dir=tmp_path, profile=profil, formats=["md"])
     md = res["chemin_md"].read_text(encoding="utf-8")
     assert res["nb_articles"] == 0 and md.count("Aucune donnée pour cette section") >= 5
 

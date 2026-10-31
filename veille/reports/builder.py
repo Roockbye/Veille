@@ -66,6 +66,34 @@ def cluster_topics(items: list[dict]) -> list[tuple[dict, list[dict]]]:
     return [(lead, others) for lead, others, _ in groups]
 
 
+CRITERES = {"confidentialite": "Confidentialité", "integrite": "Intégrité", "disponibilite": "Disponibilité",
+            "tracabilite": "Traçabilité"}
+
+
+def upcoming_deadlines(p: dict, matrix: list[dict], today: date) -> list[dict]:
+    """Échéances futures : engagements de l'organisation + dates des textes jugés applicables ou indirects."""
+    out = []
+    for e in p.get("echeances") or []:
+        out.append({"date": e["date"], "libelle": e["libelle"], "origine": e.get("origine") or "Organisation"})
+    for m in matrix:
+        if m["resultat"] in ("probable", "indirect"):
+            for d in m["dates"]:
+                out.append({"date": d["date"], "libelle": f"{m['nom'].split(' — ')[0]} : {d['libelle']}", "origine": "Référentiel (à vérifier)"})
+    res = []
+    for e in out:
+        dt = None
+        try:
+            dt = date.fromisoformat(e["date"])
+        except ValueError:
+            if e["date"].isdigit() and len(e["date"]) == 4 and int(e["date"]) >= today.year:
+                res.append({**e, "quand": f"courant {e['date']} (date exacte à préciser)", "_k": f"{e['date']}-01-01"})
+            continue
+        if dt >= today:
+            days = (dt - today).days
+            res.append({**e, "quand": f"dans {days} jours (~{days // 30} mois)" if days > 60 else f"dans {days} jours", "_k": e["date"]})
+    return sorted(res, key=lambda e: e["_k"])
+
+
 class Doc:
     def __init__(self) -> None:
         self.blocks: list[dict] = []
@@ -199,9 +227,8 @@ def build_document(data: dict) -> Doc:
                        "lines": [f"Période : {period}",
                                  f"Généré le {data['generated'].strftime('%d/%m/%Y à %H:%M')} (UTC)",
                                  "Périmètre : " + ", ".join(scope_labels),
-                                 f"Outil : VeilleCyber {__version__} — moteur d'analyse {ANALYZER_VERSION}",
-                                 "Compétence visée : B1.A1.C3"],
-                       "demo": bool(p.get("demonstration"))})
+                                 f"Outil : VeilleCyber {__version__} — moteur d'analyse {ANALYZER_VERSION}"],
+                       "demo": bool(p.get("fictive"))})
 
     # 2. Résumé exécutif
     doc.h1("1. Résumé exécutif")
@@ -226,9 +253,16 @@ def build_document(data: dict) -> Doc:
     doc.p(f"{len(open_actions)} actions sont proposées ou en cours dans le plan d'action "
           f"({sum(1 for a in open_actions if a['priorite'] == 'Critique')} critiques, "
           f"{sum(1 for a in open_actions if a['priorite'] == 'Élevée')} élevées).", "[Recommandation]")
-    if p.get("demonstration"):
-        doc.note("Profil de démonstration : l'organisation étudiée est fictive. Les données collectées sont réelles, "
-                 "mais l'analyse d'impact illustre la méthode et doit être refaite avec le profil réel.")
+    sc_items = [a for a in arts if a.get("scenarios") and a["priorite"] in ("Critique", "Élevée", "Modérée")]
+    if p.get("scenarios_redoutes"):
+        doc.p(f"{len(sc_items)} éléments de priorité modérée ou plus se rattachent aux scénarios redoutés de l'organisation "
+              "(détail en section 11).", "[Analyse]")
+    ech = upcoming_deadlines(p, data["matrix"], data["generated"].date())
+    if ech:
+        doc.p("Échéances à venir : " + " ; ".join(f"{e['libelle']} — {e['quand']}" for e in ech[:4]) + ".", "[Fait]")
+    if p.get("fictive"):
+        doc.note("Organisation fictive (cas d'étude) : le contexte, l'inventaire et les chiffres de l'organisation sont inventés ; "
+                 "les éléments de veille, sources et référentiels cités sont réels et ont été réellement collectés.")
 
     # 3. Objectifs et périmètre
     doc.h1("2. Objectifs et périmètre de la veille")
@@ -250,8 +284,22 @@ def build_document(data: dict) -> Doc:
         ["Thèmes technologiques", ", ".join(THEMES[t][0] for t in p.get("themes_veille") or [] if t in THEMES) or "Tous"],
     ], widths=[0.28, 0.72])
     if p.get("contraintes_securite") or p.get("risques_connus"):
+        doc.h2("Contraintes et constats de départ")
         doc.ul([("Contrainte", c) for c in p.get("contraintes_securite") or []] +
-               [("Risque connu", r) for r in p.get("risques_connus") or []])
+               [("Constat", r) for r in p.get("risques_connus") or []])
+    if p.get("besoins_securite"):
+        doc.h2("Besoins de sécurité")
+        doc.table(["Besoin", "Critère", "Exigence cible"],
+                  [[b.get("besoin", ""), CRITERES.get(b.get("critere"), b.get("critere") or ""), b.get("niveau", "")]
+                   for b in p["besoins_securite"]], widths=[0.6, 0.2, 0.2])
+    if p.get("scenarios_redoutes"):
+        doc.h2("Scénarios redoutés suivis par la veille")
+        doc.table(["Scénario", "Description"], [[x["nom"], x.get("description") or ""] for x in p["scenarios_redoutes"]],
+                  widths=[0.32, 0.68])
+    if p.get("parties_prenantes"):
+        doc.h2("Parties prenantes et attentes de sécurité")
+        doc.table(["Partie prenante", "Attentes"], [[x.get("nom", ""), x.get("attentes", "")] for x in p["parties_prenantes"]],
+                  widths=[0.38, 0.62])
     if hyps:
         doc.h2("Hypothèses de travail")
         doc.ul([("[Hypothèse]", h) for h in hyps])
@@ -449,6 +497,27 @@ def build_document(data: dict) -> Doc:
         if cia:
             doc.p("Types d'impact potentiels (éléments de priorité modérée ou plus) : " +
                   ", ".join(f"{k} ({v})" for k, v in cia.most_common()) + ".", "[Analyse]")
+        if p.get("scenarios_redoutes"):
+            doc.h2("Lien avec les scénarios redoutés")
+            rows_sc = []
+            for sc in p["scenarios_redoutes"]:
+                linked = sorted([a for a in arts if any(x["nom"] == sc["nom"] for x in a.get("scenarios") or [])], key=_prio_key)
+                strong = [a for a in linked if a["priorite"] in ("Critique", "Élevée", "Modérée")]
+                rows_sc.append([sc["nom"], str(len(linked)), str(len(strong)),
+                                linked[0]["priorite"] if linked else "—",
+                                "; ".join(f"{a['titre'][:90]} ({a['source_nom']})" for a in strong[:3]) or "—"])
+            doc.table(["Scénario", "Éléments liés", "dont prio. ≥ modérée", "Priorité max.", "Exemples"], rows_sc,
+                      widths=[0.24, 0.1, 0.12, 0.1, 0.44])
+            doc.p("Ces éléments alimentent la mise à jour de l'analyse de risques : ils renseignent sur la vraisemblance "
+                  "des scénarios (modes opératoires actifs, vulnérabilités exploitées) et sur les mesures à renforcer.", "[Analyse]")
+        if p.get("besoins_securite"):
+            doc.h2("Confrontation aux besoins de sécurité")
+            imp = Counter(i["type"] for a in arts if a["priorite"] in ("Critique", "Élevée", "Modérée") for i in a.get("impacts") or [])
+            doc.table(["Besoin", "Exigence cible", "Éléments menaçant ce critère (prio. ≥ modérée)"],
+                      [[b.get("besoin", ""), f"{CRITERES.get(b.get('critere'), '')} : {b.get('niveau', '')}",
+                        str(imp.get(b.get("critere"), 0)) if b.get("critere") in ("confidentialite", "integrite", "disponibilite")
+                        else "Non mesuré automatiquement (critère de traçabilité)"] for b in p["besoins_securite"]],
+                      widths=[0.45, 0.25, 0.3])
         doc.p("Les impacts sont des potentialités déduites du contenu des sources et du profil déclaré ; "
               "l'exposition réelle doit être confirmée par une vérification sur le SI (aucun scan n'est réalisé par l'outil).", "[Hypothèse]")
 
@@ -466,6 +535,21 @@ def build_document(data: dict) -> Doc:
                      "; ".join(f"{d['date']} : {d['libelle']}" for d in future) or
                      ("En vigueur depuis " + past[-1]["date"] if past else "À vérifier"),
                      (m.get("note_statut") or "") + " Sources : " + ", ".join(m["references"][:2])])
+    commitments = [e for e in p.get("exigences") or [] if e.get("type") in ("contractuelle",) or e.get("id") in ("contrats_clients", "assurance_cyber")]
+    if commitments or p.get("echeances"):
+        doc.h2("Engagements propres à l'organisation")
+        if commitments:
+            doc.table(["Engagement", "Nature", "Statut", "Contenu"],
+                      [[e["nom"], "Exigence contractuelle" if e.get("type") == "contractuelle" else e.get("type"),
+                        {"identifiee": "Identifiée", "a_confirmer": "À confirmer", "cible": "Cible"}.get(e.get("statut"), e.get("statut")),
+                        e.get("commentaire") or ""] for e in commitments], widths=[0.28, 0.18, 0.12, 0.42])
+        ech = upcoming_deadlines(p, data["matrix"], data["generated"].date())
+        if ech:
+            doc.table(["Échéance", "Objet", "Origine", "Délai restant"],
+                      [[e["date"], e["libelle"], e["origine"], e["quand"]] for e in ech], widths=[0.13, 0.5, 0.2, 0.17])
+        doc.p("Engagements déclarés dans le profil de l'organisation (contrats, assureur) : ils s'imposent par contrat, "
+              "pas par la loi.", "[Fait]")
+    doc.h2("Textes et référentiels")
     if rows:
         doc.table(["Texte", "Applicabilité", "Obligations possibles (à vérifier)", "Échéances", "Remarques / sources"],
                   rows, widths=[0.12, 0.16, 0.32, 0.18, 0.22])
@@ -506,7 +590,8 @@ def build_document(data: dict) -> Doc:
                 ("Constat", a["constat"]), ("Risque / opportunité", a.get("risque") or ""), ("[Recommandation] Action", a["action"]),
                 ("Justification", a.get("justification") or ""), ("Responsable suggéré", a.get("responsable") or ""),
                 ("Échéance indicative", a.get("echeance") or ""), ("Effort estimé", EFFORT.get(a.get("effort"), "")),
-                ("Bénéfice attendu", a.get("benefice") or ""), ("Preuves de réalisation", a.get("preuves") or ""),
+                ("Bénéfice attendu", a.get("benefice") or ""), ("Coût estimé", a.get("cout_estime") or "À chiffrer"),
+                ("Preuves de réalisation", a.get("preuves") or ""),
                 ("Statut", ACTION_STATUT.get(a["statut"], a["statut"]))])
 
     # 16. Limites
@@ -556,8 +641,8 @@ def build_document(data: dict) -> Doc:
               [[str(i), a["titre"][:120], a["source_nom"], _d(a.get("publie_le")), _d(a["collecte_le"]), a["url"]]
                for i, a in enumerate(annex, 1)], widths=[0.04, 0.3, 0.14, 0.09, 0.09, 0.34])
     doc.h2("Références officielles du référentiel réglementaire et normatif")
-    doc.table(["Texte / norme", "Référence", "Sources officielles", "Vérifié le"],
-              [[m["nom"], m.get("reference") or "", ", ".join(m["references"]), m.get("verifie_le") or ""] for m in data["matrix"]],
+    doc.table(["Texte / norme", "Référence", "Sources officielles", "Fiche révisée le"],
+              [[m["nom"], m.get("reference") or "", " ".join(m["references"]), m.get("revise_le") or ""] for m in data["matrix"]],
               widths=[0.3, 0.2, 0.38, 0.12])
     return doc
 

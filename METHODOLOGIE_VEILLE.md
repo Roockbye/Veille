@@ -35,6 +35,23 @@ l'applicabilité est évaluée à partir du profil déclaré.
   *Bonne pratique* : préférer des noms de produit (« FortiGate », « Exchange Server ») aux noms d'éditeur, trop larges.
 - **Rôles** (responsable de traitement, prestataire TIC du secteur financier, déployeur d'IA, hébergeur de données
   de santé, etc.) : ils sont déterminants pour l'applicabilité des textes.
+- **Gestionnaire de chaque technologie** (équipe interne, infogérant, fournisseur SaaS) : il détermine à qui
+  revient l'action. Pour AéroStar, le pare-feu et le VPN SSL sont gérés par l'infogérant : l'action devient
+  « demander le correctif à l'infogérant et une confirmation écrite ». Pour Microsoft 365, l'outil rappelle la
+  responsabilité partagée avec le fournisseur.
+- **Marque non documentée** : la fiche AéroStar ne précise pas le modèle du pare-feu ni celui du NAS. Ces
+  équipements sont décrits par des mots-clés génériques (« SSL VPN », « NAS ») et marqués `marque_inconnue`.
+  Une vulnérabilité de ce type de produit est signalée, mais la présence dans le parc reste « à confirmer » et la
+  première action proposée est d'identifier la marque auprès du gestionnaire.
+- **Exclusions** : expressions qui désignent un autre produit portant un nom proche, par exemple
+  « Veeam Backup for Microsoft 365 » pour Microsoft 365.
+- **Scénarios redoutés** : ce sont les risques majeurs de l'organisation, avec des mots-clés. Pour AéroStar :
+  rançongiciel via compte volé et compromission de l'AD, compromission de messagerie Microsoft 365 par
+  hameçonnage, fuite de plans clients. Les éléments de veille qui s'y rattachent sont signalés et comptés : ils
+  renseignent la vraisemblance de chaque scénario dans l'analyse de risques.
+- **Besoins de sécurité (DICT), échéances, parties prenantes et responsables** : ils sont repris dans le rapport.
+  Exemples : AirCyber Bronze fin 2027, renouvellement de l'assurance cyber en 2027. Les responsables nommés
+  remplacent un « RSSI » générique ; AéroStar n'en a pas, c'est le responsable IT qui est référent sécurité.
 - **Profil incomplet** : l'outil continue de fonctionner avec des **hypothèses explicitement signalées** dans
   l'interface et dans chaque rapport. Par exemple : « Inventaire technique vide : les vulnérabilités sont classées
   À qualifier plutôt qu'écartées ».
@@ -96,7 +113,7 @@ de la confiance de chaque analyse. Une source accessible n'est pas réputée fia
 | Forte | Une technologie de l'inventaire est citée, ou un texte dont l'applicabilité est probable. |
 | Moyenne | Thème surveillé, impact indirect (clients, contrats), ou menace générique transposable. |
 | À qualifier | Information potentiellement importante, mais le profil ne permet pas de conclure (inventaire vide, applicabilité non évaluable). |
-| Faible | Produits cités absents de l'inventaire, ou aucun lien établi. |
+| Faible | Produits cités absents de l'inventaire, ou aucun lien établi. Une vulnérabilité, ou une campagne exploitant des CVE, sur un produit absent du parc reste « faible », même si elle évoque un thème surveillé. Les produits associés aux CVE par le catalogue KEV sont pris en compte. |
 | Non pertinente | Aucun indicateur de veille (bruit, promotion). |
 
 ### 6.2 Score explicable
@@ -111,9 +128,10 @@ Chaque point attribué est accompagné de sa justification, de son origine et de
 | Exploitation active | 30 (+5 si rançongiciel) | CVE présente dans le KEV (vérifié) |
 | | 18 / 8 | Exploitation ou preuve de concept signalée par la source (non vérifié) |
 | Probabilité d'exploitation | 10 (EPSS ≥ 0,5), 5 (≥ 0,1) | FIRST EPSS |
-| Présence dans le parc | 25 (+5 si version citée) | Inventaire déclaré |
+| Présence dans le parc | 25 (+5 si version citée) ; 10 si la marque n'est pas documentée (présence à confirmer) | Inventaire déclaré |
 | Exposition | 15 (Internet), 8 (DMZ) | Inventaire déclaré |
 | Impact sur les activités | 10 / 6 / 3 selon la criticité | Inventaire déclaré |
+| Scénario redouté | 10 | Mots-clés des scénarios redoutés du profil (menaces, vulnérabilités, incidents, bonnes pratiques) |
 | Urgence | 10 | Alerte CERT-FR |
 | Importance réglementaire ou normative | 30 (obligation légale probable), 15 (norme probable ou impact indirect), 8 (à qualifier) | Référentiel et profil |
 | Évolution normative | 20 (changement constaté), 10 (révision engagée) | ISO Open Data |
@@ -127,7 +145,7 @@ Chaque point attribué est accompagné de sa justification, de son origine et de
 
 | Niveau | Condition |
 |---|---|
-| **Critique** | Score ≥ 75 **et** technologie du parc concernée **et** gravité ou exploitation **vérifiée** (KEV, CVSS ≥ 9 ou alerte CERT-FR). |
+| **Critique** | Score ≥ 75 **et** technologie du parc **identifiée** (marque connue) **et** gravité ou exploitation **vérifiée** (KEV, CVSS ≥ 9 ou alerte CERT-FR). |
 | **Élevée** | Score ≥ 50, ou ≥ 75 sans les conditions du niveau critique (plafonnement justifié). |
 | **Modérée** | Score ≥ 25. |
 | **Faible** | Score < 25, ou information non pertinente. |
@@ -158,8 +176,11 @@ L'échéance dépend du niveau : Critique 48 h, Élevée 7 j, Modérée 30 j, Fa
 
 - **Référentiel** (`config/referentiels.yaml`) : il donne pour chaque texte sa référence, sa **nature juridique**,
   son statut, ses dates avec la source officielle, les organisations concernées, les obligations possibles et les
-  démarches pour qualifier l'applicabilité. Cette base de connaissance de configuration est datée (`verifie_le`)
-  et présentée comme telle, distincte des informations collectées.
+  démarches pour qualifier l'applicabilité. Cette base de connaissance de configuration est datée (`revise_le`)
+  et présentée comme telle, distincte des informations collectées. Ses dates **n'ont pas été vérifiées
+  automatiquement** (EUR-Lex et Légifrance refusent les clients automatisés) : elles sont à revérifier sur la source officielle.
+- **Statut « cible »** d'une exigence : un référentiel volontaire visé mais non exigé (ISO/IEC 27001 pour AéroStar)
+  reste « à qualifier » et n'est jamais présenté comme une obligation.
 - **Applicabilité** : des règles sur le secteur, la taille, les rôles, les données et les exigences déclarées
   produisent une **orientation**, jamais une conclusion : *probable — à confirmer*, *indirect*, *à qualifier*,
   *peu probable*, *non évaluable (informations manquantes)*.

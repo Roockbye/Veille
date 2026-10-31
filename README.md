@@ -4,10 +4,10 @@ Application locale qui **collecte** automatiquement des informations auprès de 
 les **classe**, les **analyse** au regard du contexte d'une organisation, **priorise** les risques de manière
 explicable, propose un **plan d'action** et génère un **rapport de veille** argumenté (PDF et Markdown).
 
-Elle a été conçue pour démontrer la compétence **B1.A1.C3** : *assurer une veille technologique, technique,
-réglementaire et normative à l'aide d'outils adaptés, analyser les impacts sur l'organisation, identifier les
-obligations et les opportunités d'amélioration de la sécurité du SI*.
-La correspondance détaillée figure dans [CORRESPONDANCE_B1_A1_C3.md](CORRESPONDANCE_B1_A1_C3.md).
+L'outil est configuré pour **AéroStar SAS**, une organisation **fictive** servant de cas d'étude : bureau
+d'études aéronautique de rang 2 (120 salariés, Blagnac), dépositaire des plans et maquettes de ses clients,
+qui doit atteindre le niveau **AirCyber Bronze fin 2027** et renouveler son assurance cyber en 2027. Le contexte
+d'AéroStar est inventé ; les sources, les référentiels et les informations collectées sont réels.
 
 > L'outil est un outil de **veille et d'aide à la décision** : il ne réalise aucun scan, aucune modification
 > du système d'information et aucune remédiation automatique.
@@ -36,15 +36,15 @@ La correspondance détaillée figure dans [CORRESPONDANCE_B1_A1_C3.md](CORRESPON
 
 | Domaine | Ce que fait l'application |
 |---|---|
-| Contexte | Profil de l'organisation : secteur, taille, maturité, rôles, activités, données traitées, inventaire technique (exposition, criticité, versions), contraintes, risques, exigences, thèmes surveillés. Hypothèses explicites si le profil est incomplet. |
-| Sources | Catalogue de 51 sources (48 actives, vérifiées le 29/10/2026), modifiable depuis l'interface : justification, confiance, fréquence, état de fonctionnement, alternative documentée. Import OPML (Feedly), export YAML. |
+| Contexte | Profil de l'organisation : secteur, taille, maturité, rôles, activités, données traitées, inventaire technique (exposition, criticité, versions, gestionnaire, marque connue ou non, exclusions), contraintes, constats, **besoins de sécurité (DICT)**, **scénarios redoutés**, **échéances**, **parties prenantes**, **responsables**, exigences, thèmes surveillés. Hypothèses explicites si le profil est incomplet. |
+| Sources | Catalogue de 57 sources (49 actives, vérifiées les 29 et 31/10/2026), adapté au profil (sources aéronautiques et parlementaires ajoutées, sources hors contexte désactivées avec justification), modifiable depuis l'interface : justification, confiance, fréquence, état de fonctionnement, alternative documentée. Import OPML (Feedly), export YAML. |
 | Collecte | RSS/Atom, catalogue CISA KEV (JSON), métadonnées ISO Open Data, API Feedly facultative. Fréquence par source, robots.txt respecté, requêtes conditionnelles, reprises, journal par source, historique. |
 | Déduplication | URL canonique (paramètres de suivi supprimés) puis empreinte du contenu. |
 | Enrichissement | CVSS (API NVD), exploitation active (CISA KEV), probabilité d'exploitation (FIRST EPSS). **Aucune valeur n'est estimée.** |
-| Analyse | 8 catégories, résumé en français, mots-clés, technologies du parc concernées, CVE, impacts C/I/D/conformité, pertinence, priorité justifiée, actions, échéance, urgence, confiance, points à vérifier. Fiches réglementaire et normative dédiées. |
-| Priorisation | Score additif explicable (gravité, exploitation, présence et exposition dans le parc, criticité, urgence, importance réglementaire, ancienneté) → Critique / Élevée / Modérée / Faible / À qualifier. |
-| Réglementaire | Référentiel de 15 textes et normes (RGPD, NIS 2, DORA, AI Act, CRA, eIDAS 2, OIV, HDS, PCI DSS, ISO 27001/27002/42001, NIST CSF, ANSSI, SecNumCloud) avec nature juridique et **orientation** d'applicabilité justifiée, jamais présentée comme une conclusion juridique. |
-| Plan d'action | Constat, risque/opportunité, action, justification, priorité, responsable, échéance, effort, bénéfice, preuves, statut ; modification et export CSV. |
+| Analyse | 8 catégories, résumé en français, mots-clés, technologies du parc concernées, CVE, impacts C/I/D/conformité, **lien avec les scénarios redoutés**, pertinence, priorité justifiée, actions attribuées aux responsables de l'organisation (dont l'infogérant), échéance, urgence, confiance, points à vérifier. Fiches réglementaire et normative dédiées. |
+| Priorisation | Score additif explicable (gravité, exploitation, présence et exposition dans le parc, criticité, scénario redouté, urgence, importance réglementaire, ancienneté) → Critique / Élevée / Modérée / Faible / À qualifier. |
+| Réglementaire et normatif | Référentiel de 19 textes et normes (RGPD, NIS 2, DORA, AI Act, CRA, eIDAS 2, OIV, HDS, PCI DSS, Part-IS, biens à double usage, AirCyber, EN 9100, ISO 27001/27002/42001, NIST CSF, ANSSI, SecNumCloud) avec nature juridique et **orientation** d'applicabilité justifiée, jamais présentée comme une conclusion juridique ; suivi de la transposition française de NIS 2 via les flux du Sénat. |
+| Plan d'action | Constat, risque/opportunité, action, justification, priorité, responsable, échéance, effort, bénéfice, **coût estimé**, preuves, statut ; modification et export CSV. Échéances de l'organisation (AirCyber, assurance) avec délai restant. |
 | Suivi | Statut de chaque information (nouveau, lu, pertinent, non pertinent, à investiguer, traité) avec historique. |
 | Rapports | Rapport en 18 sections, PDF et Markdown, période et périmètre au choix, prévisualisation. Faits, données vérifiées, analyses, hypothèses et recommandations étiquetés ; annexes avec URL et dates de consultation. |
 | Automatisation | Planificateur intégré ou service autonome (systemd, cron, Docker), verrou anti-doublon, notifications e-mail facultatives. |
@@ -91,10 +91,10 @@ docker compose up -d --build      # interface + service de planification ; http:
 
 ## Premier usage
 
-1. **Configuration de l'organisation** : au premier lancement, aucun profil réel n'existe. L'application utilise
-   alors le **profil de démonstration**, une organisation fictive signalée partout comme telle. Renseignez votre
-   organisation, puis enregistrez : le profil est écrit dans `config/organisation.yaml`, fichier non versionné.
-2. **Tableau de bord**, bouton « Tout collecter » : la première collecte interroge les 48 sources actives et dure
+1. **Configuration de l'organisation** : le profil d'AéroStar (`config/organisation.example.yaml`) est chargé
+   par défaut. Vérifiez-le puis enregistrez-le : il est écrit dans `config/organisation.yaml`, fichier non versionné.
+   Après toute modification, cliquez sur « Réanalyser » pour appliquer le nouveau contexte.
+2. **Tableau de bord**, bouton « Tout collecter » : la première collecte interroge les 49 sources actives et dure
    environ 5 à 8 minutes, à cause de la limite de débit de l'API NVD sans clé. Les collectes suivantes n'interrogent
    que les sources dont la fréquence est échue.
 3. **Flux de veille** et **Vulnérabilités et menaces** : sélectionnez un élément pour afficher sa fiche, puis
@@ -102,9 +102,9 @@ docker compose up -d --build      # interface + service de planification ; http:
 4. **Plan d'action** : validez, planifiez et suivez les actions proposées.
 5. **Rapports** : choisissez la période et le périmètre, prévisualisez, puis générez le PDF et le Markdown.
 
-**Exemple de rapport** : [exemples/EXEMPLE_rapport_veille_demo_2026-10-22_2026-10-29.pdf](exemples/EXEMPLE_rapport_veille_demo_2026-10-22_2026-10-29.pdf)
-et sa [version Markdown](exemples/EXEMPLE_rapport_veille_demo_2026-10-22_2026-10-29.md). Ce rapport repose sur une
-collecte **réelle** du 29/10/2026 (1 068 éléments, 48 sources), analysée avec le profil de **démonstration fictif**.
+**Exemple de rapport** : [exemples/EXEMPLE_rapport_veille_AeroStar_2026-10-24_2026-10-31.pdf](exemples/EXEMPLE_rapport_veille_AeroStar_2026-10-24_2026-10-31.pdf)
+et sa [version Markdown](exemples/EXEMPLE_rapport_veille_AeroStar_2026-10-24_2026-10-31.md), généré à partir de collectes
+**réelles** des 29 et 31/10/2026 analysées avec le profil d'AéroStar (organisation fictive).
 
 ## Ligne de commande
 
@@ -143,8 +143,8 @@ python -m veille sources-export > sources.yaml
 
 | Fichier | Rôle |
 |---|---|
-| `config/organisation.yaml` | Profil réel de l'organisation, créé depuis l'interface (non versionné). |
-| `config/organisation.example.yaml` | Profil de démonstration (organisation fictive). |
+| `config/organisation.yaml` | Profil de l'organisation enregistré depuis l'interface (non versionné). |
+| `config/organisation.example.yaml` | Profil d'exemple : AéroStar, organisation fictive (cas d'étude). |
 | `config/sources.yaml` | Catalogue initial des sources. Ensuite, la base fait foi : modifications dans l'interface, export YAML possible. |
 | `config/referentiels.yaml` | Textes réglementaires et normes : nature juridique, dates, obligations possibles, règles d'applicabilité. |
 | `config/settings.yaml` | Paramètres par défaut : collecte, enrichissement, planification, notifications, IA. Les modifications faites dans l'interface sont stockées en base. |
@@ -181,11 +181,11 @@ source .venv/bin/activate
 python -m pytest
 ```
 
-Les 114 tests ne font **aucun appel réseau** : les transports HTTP sont simulés. Ils couvrent la normalisation,
+Les 123 tests ne font **aucun appel réseau** : les transports HTTP sont simulés. Ils couvrent la normalisation,
 la protection SSRF, les connecteurs (RSS, Atom, flux malformés, KEV, ISO, Feedly), la déduplication, la reprise
 après erreur sans perte de données, la classification, la priorisation (y compris l'absence de CVSS inventé),
 l'applicabilité, la génération des rapports, la sécurité de l'IA, le masquage des secrets, la planification
-et le rendu des 10 pages de l'interface.
+et le rendu des 10 pages de l'interface, ainsi que la cohérence du profil AéroStar avec sa fiche et des fichiers de configuration.
 
 ## Architecture
 
@@ -212,15 +212,14 @@ veille/
 config/                  Fichiers de configuration (séparés du code)
 tests/                   Tests pytest et jeux de données de test
 docs/                    FEEDLY.md, SCHEMA_BDD.md, deploiement/
-exemples/                Rapport de démonstration (PDF + Markdown)
+exemples/                Exemple de rapport AéroStar (PDF + Markdown)
 ```
 
 ## Documentation associée
 
 - [METHODOLOGIE_VEILLE.md](METHODOLOGIE_VEILLE.md) : démarche de veille.
 - [SOURCES_ET_JUSTIFICATION.md](SOURCES_ET_JUSTIFICATION.md) : pertinence, fiabilité et limites des sources.
-- [CORRESPONDANCE_B1_A1_C3.md](CORRESPONDANCE_B1_A1_C3.md) : critères de la compétence, fonctionnalités et preuves.
-- [GUIDE_DEMONSTRATION.md](GUIDE_DEMONSTRATION.md) : scénario de présentation au jury.
+- [GUIDE_DEMONSTRATION.md](GUIDE_DEMONSTRATION.md) : scénario de présentation de l'outil.
 - [LIMITES_ET_AMELIORATIONS.md](LIMITES_ET_AMELIORATIONS.md) : limites connues et améliorations futures.
 - [docs/FEEDLY.md](docs/FEEDLY.md) : intégration Feedly.
 - [docs/SCHEMA_BDD.md](docs/SCHEMA_BDD.md) : schéma de la base de données.

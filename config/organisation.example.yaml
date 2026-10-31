@@ -1,58 +1,109 @@
 # ==========================================================================================
-#  PROFIL DE DÉMONSTRATION — ORGANISATION FICTIVE
-#  Ce profil sert uniquement à la démonstration de l'outil. Remplacez-le par le profil
-#  réel de votre organisation depuis la page « Configuration » ou en créant
-#  config/organisation.yaml (non versionné).
+#  ORGANISATION FICTIVE — CAS D'ÉTUDE « AéroStar »
+#  Profil tiré de la fiche entreprise fictive AéroStar (28/10/2026). Toutes les données de
+#  l'organisation (effectif, chiffres, clients, inventaire) sont inventées ; les éléments de
+#  veille collectés et les organismes ou référentiels cités (ANSSI, CNIL, BoostAeroSpace,
+#  GIFAS, EN 9100...) sont réels.
+#  Les champs non précisés par la fiche sont signalés par `marque_inconnue: true` ou laissés
+#  vides : l'outil les traite comme des hypothèses explicites.
 # ==========================================================================================
-demonstration: true
-nom: "NumériSanté Services (organisation fictive de démonstration)"
-secteur: services_tic_b2b
-secteurs_secondaires: [sante]
-roles: [responsable_traitement, sous_traitant_rgpd, hebergeur_donnees_sante, deployeur_systeme_ia, fournisseur_administration]
+fictive: true
+nom: "AéroStar SAS (organisation fictive)"
+secteur: ingenierie
+secteurs_secondaires: [aeronautique]
+roles: [responsable_traitement, fournisseur_entite_nis2, depositaire_donnees_clients]
 taille: moyenne
-effectif: 140
-chiffre_affaires_meur: 18
+effectif: 120
+chiffre_affaires_meur: 13.8
 pays: France
-maturite_cyber: definie
+maturite_cyber: initiale
 activites:
-  - Infogérance et hébergement d'applications métiers pour des établissements de santé privés
-  - Développement et maintenance d'un portail patient (application web)
-  - Support utilisateurs et administration de postes de travail pour ses clients
-donnees_traitees: [donnees_personnelles, donnees_sante, donnees_rh, donnees_clients]
+  - "Bureau d'études aéronautique de rang 2 (créé en 2004) : conception mécanique et calcul de structures de pièces (supports, carénages, éléments de nacelle et d'aménagement cabine)"
+  - "Dossiers de justification et documentation technique pour des équipementiers de rang 1"
+  - "Échanges quotidiens de fichiers CAO lourds avec les clients (plateforme collaborative de la filière, archives par mail pour un client)"
+  - "Site unique à Blagnac (31) : plateau de bureaux et atelier de maquettes ; télétravail 2 jours par semaine pour les ingénieurs"
+donnees_traitees: [propriete_intellectuelle, donnees_clients, donnees_personnelles, donnees_rh, donnees_double_usage]
+
 # Conseil : choisir des mots-clés précis (nom de produit plutôt que nom d'éditeur) pour limiter les faux positifs.
 technologies:
-  - {nom: Microsoft Windows Server, categorie: systeme, versions: ["2019", "2022"], mots_cles: [Windows Server, Windows], exposition: interne, criticite: elevee}
-  - {nom: Microsoft Windows 11, categorie: poste_de_travail, versions: ["23H2", "24H2"], mots_cles: [Windows 11, Windows], exposition: interne, criticite: moyenne}
-  - {nom: Active Directory / Entra ID, categorie: annuaire, versions: [], mots_cles: [Active Directory, Entra ID, Azure AD, Kerberos, NTLM], exposition: interne, criticite: critique}
-  - {nom: Microsoft 365 / Exchange Online, categorie: application, versions: [], mots_cles: [Microsoft 365, Exchange Online, Exchange Server, Microsoft Exchange, Outlook, SharePoint, Microsoft Teams], exposition: internet, criticite: elevee}
-  - {nom: Fortinet FortiGate (VPN SSL), categorie: securite, versions: ["7.4"], mots_cles: [FortiGate, FortiOS, FortiProxy], exposition: internet, criticite: critique}
-  - {nom: Cisco Catalyst (commutation), categorie: reseau, versions: [], mots_cles: [Cisco IOS XE, IOS XE, Catalyst 9200, Catalyst 9300], exposition: interne, criticite: elevee}
-  - {nom: VMware ESXi / vCenter, categorie: virtualisation, versions: ["8.0"], mots_cles: [ESXi, vCenter, VMware, vSphere], exposition: interne, criticite: critique}
-  - {nom: Ubuntu Server, categorie: systeme, versions: ["22.04", "24.04"], mots_cles: [Ubuntu], exposition: dmz, criticite: elevee}
-  - {nom: Debian, categorie: systeme, versions: ["12"], mots_cles: [Debian], exposition: interne, criticite: moyenne}
-  - {nom: Nginx, categorie: serveur, versions: [], mots_cles: [nginx], exposition: internet, criticite: elevee}
-  - {nom: PHP, categorie: application, versions: ["8.2"], mots_cles: [PHP], exposition: internet, criticite: elevee}
-  - {nom: PostgreSQL, categorie: base_de_donnees, versions: ["15"], mots_cles: [PostgreSQL], exposition: interne, criticite: critique}
-  - {nom: OpenSSH, categorie: serveur, versions: [], mots_cles: [OpenSSH], exposition: dmz, criticite: elevee}
-  - {nom: Kubernetes, categorie: cloud, versions: ["1.30"], mots_cles: [Kubernetes, kubelet], exposition: interne, criticite: elevee}
-  - {nom: GitLab, categorie: application, versions: [], mots_cles: [GitLab], exposition: internet, criticite: elevee}
-  - {nom: Veeam Backup & Replication, categorie: securite, versions: ["12"], mots_cles: [Veeam], exposition: interne, criticite: critique}
-  - {nom: Wazuh (SIEM/XDR), categorie: securite, versions: [], mots_cles: [Wazuh], exposition: interne, criticite: moyenne}
-  - {nom: Microsoft Defender for Endpoint, categorie: securite, versions: [], mots_cles: [Defender for Endpoint, Microsoft Defender], exposition: interne, criticite: elevee}
-  - {nom: Google Chrome / Microsoft Edge, categorie: poste_de_travail, versions: [], mots_cles: [Chrome, Chromium, Microsoft Edge], exposition: internet, criticite: moyenne}
+  - {nom: Active Directory (corp.aerostar.lan), categorie: annuaire, versions: [], mots_cles: [Active Directory, contrôleur de domaine, domain controller, Kerberos, NTLM, Netlogon, Group Policy], exposition: interne, criticite: critique, gestion: interne}
+  - {nom: Microsoft Entra ID, categorie: annuaire, versions: [], mots_cles: [Entra ID, Microsoft Entra, Azure AD, Azure Active Directory], exposition: internet, criticite: critique, gestion: editeur_saas}
+  - {nom: Windows Server (contrôleurs de domaine et serveurs), categorie: systeme, versions: [], mots_cles: [Windows Server], exposition: interne, criticite: critique, gestion: interne}
+  - {nom: "Serveur de fichiers du BE (partages SMB, ~8 To)", categorie: serveur, versions: [], mots_cles: [Samba, SMBv1, SMB server, serveur SMB, file server], exposition: interne, criticite: critique, gestion: interne}
+  - {nom: Postes Windows 11 (80 stations CAO + 40 portables), categorie: poste_de_travail, versions: [], mots_cles: [Windows 11], exposition: interne, criticite: elevee, gestion: interne}
+  - {nom: CATIA V5 / 3DEXPERIENCE (Dassault Systèmes), categorie: metier, versions: [V5], mots_cles: [CATIA, 3DEXPERIENCE, Dassault Systèmes, DELMIA, ENOVIA, SOLIDWORKS], exposition: interne, criticite: critique, gestion: interne}
+  - {nom: Serveur de licences Dassault Systèmes (DSLS), categorie: metier, versions: [], mots_cles: [DSLS, DS License Server, Dassault Systèmes License Server], exposition: interne, criticite: critique, gestion: interne}
+  - {nom: Nastran / Patran (calcul de structures), categorie: metier, versions: [], mots_cles: [Nastran, Patran, MSC Software, Hexagon MSC], exposition: interne, criticite: elevee, gestion: interne}
+  - {nom: "Microsoft 365 (Exchange Online, Teams, SharePoint)", categorie: application, versions: [], mots_cles: [Microsoft 365, Office 365, Exchange Online, SharePoint Online, SharePoint, Microsoft Teams, Outlook], exclusions: [Veeam Backup for Microsoft 365, Backup for Microsoft 365, for Microsoft 365], exposition: internet, criticite: elevee, gestion: editeur_saas}
+  - {nom: Microsoft Defender Antivirus (sans console centrale), categorie: securite, versions: [], mots_cles: [Microsoft Defender, Defender Antivirus], exposition: interne, criticite: elevee, gestion: interne}
+  - {nom: Pare-feu et VPN SSL (géré par l'infogérant), categorie: securite, versions: [], mots_cles: [SSL VPN, SSL-VPN, VPN SSL, firewall appliance], exposition: internet, criticite: critique, gestion: infogerant, marque_inconnue: true}
+  - {nom: NAS de sauvegarde (salle serveur), categorie: securite, versions: [], mots_cles: [NAS], exposition: interne, criticite: critique, gestion: interne, marque_inconnue: true}
+  - {nom: Intranet (nginx), categorie: serveur, versions: [], mots_cles: [nginx], exposition: interne, criticite: faible, gestion: interne}
+  - {nom: "ERP en SaaS (devis, commandes, temps, facturation)", categorie: application, versions: [], mots_cles: [], exposition: internet, criticite: elevee, gestion: editeur_saas}
+
 contraintes_securite:
-  - Disponibilité 24/7 exigée par les clients établissements de santé
-  - Hébergement des données de santé en France
-  - Équipe sécurité réduite (1 RSSI, 2 administrateurs formés)
+  - "Budget : PME à marges serrées ; toute mesure doit être chiffrée et justifiée par un gain (garder un client, baisser la prime d'assurance, obtenir une aide Cyber Boost). Enveloppe sécurité de 180 k€ sur 18 mois, hors aide Cyber Boost"
+  - "Ressources : 4 personnes à l'IT, aucune dédiée à la cybersécurité ; le responsable IT est aussi référent sécurité (pas de RSSI)"
+  - "Métier : licences CAO coûteuses liées à un serveur de licences sur site ; stations CAO puissantes, lourdes à remplacer"
+  - "Infogérant sans astreinte : pas d'intervention réseau ni pare-feu hors heures ouvrées"
+  - "Continuité visée : RTO 24 h et RPO 4 h pour le serveur du BE, RTO 4 h pour l'AD ; une journée d'arrêt du BE coûte environ 55 k€ plus les pénalités"
 risques_connus:
-  - Rançongiciel via l'accès VPN exposé sur Internet
-  - Compromission de comptes par hameçonnage (Microsoft 365)
-  - Vulnérabilités de l'application web portail patient
+  - "Réseau à plat (serveurs, postes, imprimantes et Wi-Fi invités sur le même réseau)"
+  - "Pas de MFA sur site, comptes administrateurs partagés (dont celui de l'infogérant), mots de passe par défaut dans l'AD"
+  - "Sauvegardes sur un NAS dans la même salle, jamais restaurées ; pas de PRA"
+  - "Aucune supervision : journaux non centralisés ; inventaire non à jour, serveurs mis à jour « quand on a le temps »"
+  - "Points uniques de défaillance : serveur de fichiers du BE, serveur de licences CAO, lien Internet unique, infogérant, responsable IT"
+  - "Incident de mars 2026 : compte Microsoft 365 d'un ingénieur compromis par un faux lien de partage, utilisé deux jours pour envoyer du phishing aux clients"
+
+scenarios_redoutes:
+  - nom: "Rançongiciel via compte volé et compromission de l'AD"
+    description: "Un rançongiciel entre par un compte volé, prend le contrôle de l'AD et chiffre le serveur du bureau d'études à trois semaines d'un jalon client, avec menace de publier les plans."
+    mots_cles: [rançongiciel, ransomware, Active Directory, contrôleur de domaine, domain controller, Kerberos, NTLM, credential theft, vol d'identifiants, infostealer, double extorsion, double extortion, initial access broker, courtier d'accès, SSL VPN, SSL-VPN, VPN SSL]
+  - nom: "Compromission de messagerie Microsoft 365 par hameçonnage"
+    description: "Répétition de l'incident de mars 2026 : vol de session ou d'identifiants Microsoft 365, envoi d'hameçonnage aux clients, accès aux échanges de plans."
+    mots_cles: [hameçonnage, phishing, adversary-in-the-middle, AiTM, business email compromise, BEC, token theft, vol de jeton, OAuth consent, consentement OAuth, MFA fatigue, Microsoft 365, Entra ID, Exchange Online]
+  - nom: "Fuite ou vol de plans et maquettes clients"
+    description: "Exfiltration de données de conception confiées par les clients (espionnage industriel, prestataire ou indépendant compromis, envoi par mail non maîtrisé)."
+    mots_cles: [espionnage, espionage, exfiltration, propriété intellectuelle, intellectual property, aerospace, aéronautique, aviation, CAO, CAD, fuite de données, data leak, supply chain attack, attaque de la chaîne d'approvisionnement]
+
+besoins_securite:
+  - {besoin: "Protéger les plans et maquettes clients", critere: confidentialite, niveau: "Très forte"}
+  - {besoin: "Livrer à la date contractuelle (moins de 4 h d'arrêt du BE en journée)", critere: disponibilite, niveau: "Forte"}
+  - {besoin: "Garantir que le plan livré est le bon (gestion de configuration)", critere: integrite, niveau: "Très forte"}
+  - {besoin: "Prouver qui a modifié quoi (EN 9100, audits clients)", critere: tracabilite, niveau: "Forte"}
+
+echeances:
+  - {date: "2027-12-31", libelle: "Niveau AirCyber Bronze exigé par Nacelia Systems et Garonne Aérostructures (Silver ensuite)", origine: "Exigence contractuelle clients (juin 2026)"}
+  - {date: "2027", libelle: "Renouvellement de l'assurance cyber conditionné au MFA généralisé et à des sauvegardes testées", origine: "Assureur (septembre 2026)"}
+
+parties_prenantes:
+  - {nom: "Nacelia Systems, Garonne Aérostructures, Occitane Cabin Interiors (clients de rang 1, fictifs)", attentes: "Confidentialité, plateforme d'échange sécurisée, AirCyber Bronze fin 2027, notification de tout incident sous 24 h"}
+  - {nom: "BoostAeroSpace / GIFAS (Cyber Boost)", attentes: "Évaluation AirCyber Bronze, Silver ou Gold ; accompagnement et financement de la montée en maturité"}
+  - {nom: "Occitanie Numérique Services (infogérant, fictif)", attentes: "Accès à distance aux serveurs avec un compte administrateur partagé ; pas d'astreinte"}
+  - {nom: "Assureur cyber (fictif)", attentes: "MFA généralisé et sauvegardes testées au renouvellement 2027"}
+  - {nom: "CNIL", attentes: "Notification sous 72 h d'une violation de données personnelles"}
+  - {nom: "ANSSI, CERT-FR, Cybermalveillance.gouv.fr", attentes: "Référentiels, alertes, assistance ; signalement des incidents significatifs"}
+  - {nom: "Organisme certificateur EN 9100", attentes: "Maîtrise et traçabilité de la documentation (audit annuel)"}
+
+responsables:
+  securite: "Responsable IT (référent sécurité)"
+  exploitation: "Équipe IT interne (4 personnes)"
+  infogerant: "Occitanie Numérique Services (infogérant)"
+  supervision: "Responsable IT (aucune supervision centralisée à ce jour)"
+  juridique: "Direction, avec un juriste ou DPO externe"
+  qualite: "Responsable qualité (EN 9100)"
+  direction: "Direction générale"
+
 exigences:
-  - {id: rgpd, nom: RGPD, type: legale, statut: identifiee, commentaire: "DPO désigné"}
-  - {id: hds, nom: Certification HDS, type: legale, statut: identifiee, commentaire: "Certification à renouveler"}
-  - {id: iso27001, nom: ISO/IEC 27001, type: contractuelle, statut: identifiee, commentaire: "Exigée par deux clients ; référentiel HDS adossé à l'ISO 27001"}
-  - {id: nis2, nom: NIS 2, type: legale, statut: a_confirmer, commentaire: "Qualification entité importante à confirmer"}
-themes_veille: [ia_generative, ia_cybersecurite, soar, siem_edr_xdr, zero_trust_iam, cloud_conteneurs, post_quantique, devsecops_sbom, detection_remediation]
+  - {id: rgpd, nom: RGPD, type: legale, statut: identifiee, commentaire: "Données des salariés, des candidats et des contacts clients"}
+  - {id: contrats_clients, nom: "Contrats clients (NDA, plans d'assurance sécurité)", type: contractuelle, statut: identifiee, commentaire: "Confidentialité, audit, notification d'incident sous 24 h"}
+  - {id: aircyber, nom: "AirCyber (BoostAeroSpace)", type: contractuelle, statut: identifiee, commentaire: "Bronze fin 2027, Silver ensuite"}
+  - {id: en9100, nom: "EN 9100:2018", type: normative, statut: identifiee, commentaire: "Certification renouvelée en 2024 ; maîtrise documentaire, gestion de configuration, traçabilité"}
+  - {id: iso27001, nom: "ISO/IEC 27001", type: normative, statut: cible, commentaire: "Non exigée ; référentiel de bonnes pratiques et cible à long terme"}
+  - {id: nis2, nom: NIS 2, type: legale, statut: a_confirmer, commentaire: "À qualifier : obligations répercutées par les clients ; transposition française en discussion (octobre 2026)"}
+  - {id: double_usage, nom: "Contrôle des biens à double usage", type: legale, statut: a_confirmer, commentaire: "À vérifier projet par projet"}
+  - {id: assurance_cyber, nom: "Assurance cyber", type: contractuelle, statut: identifiee, commentaire: "MFA généralisé et sauvegardes testées exigés au renouvellement 2027"}
+
+themes_veille: [zero_trust_iam, messagerie_hameconnage, sauvegarde_continuite, siem_edr_xdr, detection_remediation, cloud_conteneurs, ia_generative]
 frequence_collecte: quotidienne
 frequence_rapport: hebdomadaire

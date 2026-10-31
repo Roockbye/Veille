@@ -16,7 +16,7 @@ SCHEMA_FILE = Path(__file__).with_name("schema.sql")
 JSON_COLUMNS = {
     "filtre_mots_cles", "technologies", "options", "donnees", "categories", "mots_cles", "produits_cites",
     "cves", "impacts", "pertinence_motifs", "facteurs", "actions", "a_verifier", "reglementaire", "normatif",
-    "perimetre", "themes",
+    "perimetre", "themes", "scenarios",
 }
 
 ARTICLE_STATUSES = ["nouveau", "lu", "pertinent", "non_pertinent", "a_investiguer", "traite"]
@@ -60,10 +60,17 @@ class Storage:
         finally:
             c.close()
 
+    # Colonnes ajoutées après la première version : ajoutées aux bases existantes sans perte de données
+    MIGRATIONS = [("analyses", "scenarios", "TEXT"), ("actions", "cout_estime", "TEXT")]
+
     def init_db(self) -> None:
         with self.conn() as c:
             c.execute("PRAGMA journal_mode = WAL")  # lectures concurrentes interface / planificateur
             c.executescript(SCHEMA_FILE.read_text(encoding="utf-8"))
+            for table, col, typ in self.MIGRATIONS:
+                cols = {r["name"] for r in c.execute(f"PRAGMA table_info({table})")}
+                if col not in cols:
+                    c.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
 
     def query(self, sql: str, params: Iterable = ()) -> list[dict]:
         with self.conn() as c:
@@ -93,6 +100,11 @@ class Storage:
                     sets = ", ".join(f"{k} = ?" for k in values)
                     c.execute(f"UPDATE sources SET {sets}, modifie_le = ? WHERE id = ?",
                               (*values.values(), now, src["id"]))
+                    # cohérence du statut avec l'activation
+                    c.execute("""UPDATE sources SET statut = CASE
+                                     WHEN actif = 0 AND type != 'manuel' THEN 'desactive'
+                                     WHEN actif = 1 AND statut = 'desactive' THEN 'non_verifie'
+                                     ELSE statut END WHERE id = ?""", (src["id"],))
                 return False
             statut = src.get("statut") or ("non_verifie" if values["actif"] else "desactive")
             cols = ["id", *values.keys(), "statut", "cree_le", "modifie_le"]
@@ -228,7 +240,7 @@ class Storage:
             where.append("(n.technologies LIKE ? OR n.produits_cites LIKE ?)")
             params += [f"%{technology}%"] * 2
         sql = f"""SELECT a.*, s.nom AS source_nom, s.categorie AS source_categorie, s.confiance AS source_confiance,
-                         n.categories, n.categorie_principale, n.mots_cles, n.technologies, n.produits_cites, n.themes, n.cves,
+                         n.categories, n.categorie_principale, n.mots_cles, n.technologies, n.produits_cites, n.themes, n.scenarios, n.cves,
                          n.impacts, n.pertinence, n.pertinence_motifs, n.priorite, n.score, n.facteurs, n.actions,
                          n.echeance, n.urgence, n.confiance, n.a_verifier, n.resume_fr, n.methode_resume,
                          n.reglementaire, n.normatif
@@ -241,7 +253,7 @@ class Storage:
 
     # ------------------------------------------------------------------ analyses
     def save_analysis(self, article_id: int, a: dict) -> None:
-        cols = ["categories", "categorie_principale", "mots_cles", "technologies", "produits_cites", "themes", "cves",
+        cols = ["categories", "categorie_principale", "mots_cles", "technologies", "produits_cites", "themes", "scenarios", "cves",
                 "impacts", "pertinence", "pertinence_motifs", "priorite", "score", "facteurs", "actions",
                 "echeance", "urgence", "confiance", "a_verifier", "resume_fr", "methode_resume",
                 "reglementaire", "normatif", "version_analyse", "analyse_le"]
@@ -315,7 +327,7 @@ class Storage:
 
     # ------------------------------------------------------------------ actions
     ACTION_FIELDS = ["constat", "risque", "action", "justification", "priorite", "responsable", "echeance",
-                     "effort", "benefice", "preuves", "statut", "commentaire"]
+                     "effort", "benefice", "preuves", "cout_estime", "statut", "commentaire"]
 
     def upsert_auto_action(self, cle: str, article_id: int | None, a: dict) -> bool:
         """Crée une action automatique si elle n'existe pas. Une action existante n'est jamais écrasée

@@ -79,3 +79,47 @@ def test_liste_blanche_derivee_des_sources(storage):
     seed_sources(storage)
     d = allowed_domains(storage)
     assert "cert.cyber.gouv.fr" in d and "services.nvd.nist.gov" in d and "localhost" not in d
+
+
+def test_profil_aerostar_fidele_a_la_fiche(profil):
+    assert profil["fictive"] and profil["effectif"] == 120 and profil["chiffre_affaires_meur"] == 13.8
+    assert profil["taille"] == "moyenne" and profil["maturite_cyber"] == "initiale"
+    assert any(e["date"] == "2027-12-31" and "AirCyber Bronze" in e["libelle"] for e in profil["echeances"])
+    assert any("180 k€" in c for c in profil["contraintes_securite"]) and any("RTO 24 h" in c for c in profil["contraintes_securite"])
+    assert len(profil["scenarios_redoutes"]) == 3 and profil["responsables"]["securite"].startswith("Responsable IT")
+    assert not validate_profile(profil)
+
+
+def test_applicabilite_aerostar(profil):
+    get = {m["id"]: m for m in applicability_matrix(profil)}
+    assert get["nis2"]["resultat"] == "a_qualifier"          # « à qualifier » comme dans la fiche
+    assert get["aircyber"]["resultat"] == "probable" and get["aircyber"]["nature"] == "exigence_contractuelle"
+    assert get["en9100"]["resultat"] == "probable" and get["en9100"]["nature"] == "norme"
+    assert get["iso27001"]["resultat"] == "a_qualifier" and "cible" in get["iso27001"]["motif"]   # non exigée
+    assert get["double_usage"]["resultat"] == "a_qualifier"  # à vérifier projet par projet
+    assert get["part_is"]["resultat"] == "indirect"
+    assert get["dora"]["resultat"] == "peu_probable" and get["hds"]["resultat"] == "peu_probable"
+    assert get["rgpd"]["resultat"] == "probable"
+
+
+def test_referentiel_bien_forme():
+    import yaml
+    from veille.config import config_dir
+    data = yaml.safe_load((config_dir() / "referentiels.yaml").read_text(encoding="utf-8"))
+    for t in data["textes"]:
+        for k in ("obligations_possibles", "demarches_applicabilite", "references"):
+            assert all(isinstance(x, str) for x in t.get(k) or []), (t["id"], k)  # un « : » non protégé crée un dict
+        assert isinstance(t["concernes"], str) and t.get("revise_le")
+        for r in t["applicabilite"]["regles"]:
+            assert isinstance(r["motif"], str), t["id"]
+
+
+def test_inventaire_exemple_sans_cle_parasite():
+    """Une virgule non protégée dans un nom YAML « {nom: a, b} » crée une clé parasite et tronque le nom."""
+    import yaml
+    from veille.config import config_dir
+    data = yaml.safe_load((config_dir() / "organisation.example.yaml").read_text(encoding="utf-8"))
+    allowed = {"nom", "categorie", "versions", "mots_cles", "exclusions", "exposition", "criticite", "gestion", "marque_inconnue"}
+    for t in data["technologies"]:
+        assert set(t) <= allowed, (t["nom"], set(t) - allowed)
+        assert t["nom"].count("(") == t["nom"].count(")"), t["nom"]

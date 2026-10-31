@@ -37,7 +37,7 @@ def render():
                     st.markdown("**Obligations possibles (à vérifier)**\n" + "\n".join(f"- {esc(o)}" for o in m["obligations_possibles"]))
                 st.markdown("**Démarches pour qualifier l'applicabilité**\n" + "\n".join(f"- {esc(o)}" for o in m["demarches_applicabilite"]))
                 st.markdown("**Justificatifs / sources officielles** : " + ", ".join(link(u, u) for u in m["references"]) +
-                            f" — référentiel vérifié le {m['verifie_le']}")
+                            f" — fiche révisée le {m['revise_le']} (dates à revérifier sur la source officielle)")
     with tabs[1]:
         f = filters(storage, "reg", default_days=90, default_cats=["reglementaire"])
         rows = sort_rows([r for r in storage.list_articles(**f) if r.get("priorite")], "reg")

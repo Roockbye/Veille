@@ -119,6 +119,15 @@ THEMES = {
                        ["DevSecOps", "SBOM", "dependency", "dépendance", "open source", "npm", "PyPI", "crates.io",
                         "package", "paquet", "SLSA", "Scorecard", "SAST", "DAST", "CI/CD", "pipeline",
                         "secret scanning", "code scanning", "memory safety", "Rust"]),
+    "sauvegarde_continuite": ("Sauvegarde, restauration et continuité d'activité",
+                              ["sauvegarde", "backup", "restauration", "restore", "immuable", "immutable", "air-gapped",
+                               "hors ligne", "offline backup", "PRA", "PCA", "plan de reprise", "disaster recovery",
+                               "continuité d'activité", "business continuity", "résilience", "resilience", "3-2-1"]),
+    "messagerie_hameconnage": ("Sécurité de la messagerie et lutte contre l'hameçonnage",
+                               ["hameçonnage", "phishing", "DMARC", "DKIM", "SPF", "adversary-in-the-middle", "AiTM",
+                                "business email compromise", "BEC", "email security", "sécurité de la messagerie",
+                                "Defender for Office 365", "Exchange Online", "quishing", "vol de jeton", "token theft",
+                                "phishing-resistant", "résistante à l'hameçonnage"]),
     "detection_remediation": ("Nouvelles méthodes de détection, de prévention et de remédiation",
                               ["detection engineering", "ingénierie de détection", "remédiation", "remediation",
                                "prevention", "prévention", "mitigation", "atténuation", "durcissement",
@@ -237,13 +246,17 @@ def match_inventory(text: str, technologies: list[dict], extra_terms: list[str] 
     haystack = text + "\n" + " ".join(extra_terms or [])
     matches = []
     for t in technologies:
-        hits = [k for k in t.get("mots_cles", []) if match_exact_word(haystack, k)]
+        text_t = haystack
+        for ex in t.get("exclusions") or []:  # expressions qui désignent un autre produit (ex. « Veeam Backup for Microsoft 365 »)
+            text_t = re.sub(re.escape(ex), " ", text_t, flags=re.IGNORECASE)
+        hits = [k for k in t.get("mots_cles", []) if match_exact_word(text_t, k)]
         if not hits:
             continue
-        versions = [v for v in t.get("versions", []) if v and match_exact_word(haystack, v)]
+        versions = [v for v in t.get("versions", []) if v and match_exact_word(text_t, v)]
         matches.append({"nom": t["nom"], "mots": hits, "versions_citees": versions,
                         "versions_parc": t.get("versions", []), "exposition": t.get("exposition", "inconnue"),
-                        "criticite": t.get("criticite", "moyenne")})
+                        "criticite": t.get("criticite", "moyenne"), "gestion": t.get("gestion", "interne"),
+                        "marque_inconnue": bool(t.get("marque_inconnue"))})
     return matches
 
 
@@ -254,3 +267,13 @@ def products_cited(text: str, extra: list[str] | None = None) -> list[str]:
             found.append(e)
     # supprime les doublons inclus (« Chrome » si « Google Chrome »)
     return [p for p in found if not any(p != q and p.lower() in q.lower() for q in found)][:15]
+
+
+def match_scenarios(text: str, scenarios: list[dict]) -> list[dict]:
+    """Scénarios redoutés de l'organisation évoqués par l'élément (au moins un mot-clé)."""
+    out = []
+    for sc in scenarios or []:
+        hits = find_terms(text, sc.get("mots_cles") or [])
+        if hits:
+            out.append({"nom": sc["nom"], "declencheurs": hits[:5]})
+    return out

@@ -13,7 +13,8 @@ import re
 from datetime import timedelta
 
 from veille import ANALYZER_VERSION
-from veille.classify import CATEGORIES, THEMES, classify, detect_impacts, find_terms, match_inventory, products_cited
+from veille.classify import (CATEGORIES, THEMES, classify, detect_impacts, find_terms, match_inventory, match_scenarios,
+                             products_cited)
 from veille.collectors.enrichment import extract_cves
 from veille.knowledge import APPLICABILITE, NATURES_JURIDIQUES, STATUTS, detect_referentiels, evaluate_applicability, get_referentiel
 from veille.normalize import iso, parse_date, utcnow
@@ -144,11 +145,15 @@ def analyze(article: dict, profile: dict, kev: dict[str, dict], cves_data: dict[
     # dans un autre avis peut concerner un composant tiers (ex. Chromium embarqué dans un logiciel industriel).
     kev_terms = [f"{own_kev.get('fournisseur') or ''} {own_kev.get('produit') or ''}".strip()] if own_kev else []
     inv = match_inventory(text, profile.get("technologies") or [], kev_terms)
-    products = products_cited(text, [own_kev["produit"]] if own_kev.get("produit") else [])
+    # Produits cités : texte + produits que le KEV associe aux CVE citées (sans les utiliser pour l'inventaire)
+    products = products_cited(text, ([own_kev["produit"]] if own_kev.get("produit") else [])
+                              + [k["produit"] for k in kev_rows if k.get("produit")])
     impacts = detect_impacts(text, cats)
     refs = detect_referentiels(text)
     themes = cls["themes"]
     org_themes = set(profile.get("themes_veille") or THEMES.keys())
+    threat_like = bool(set(cats) & {"menace", "vulnerabilite", "incident", "bonne_pratique"})
+    scenarios = match_scenarios(text, profile.get("scenarios_redoutes") or []) if threat_like else []
     watched_themes = [t for t in themes if t in org_themes]
 
     # ---------------------------------------------------------------- données vérifiées
@@ -182,7 +187,8 @@ def analyze(article: dict, profile: dict, kev: dict[str, dict], cves_data: dict[
             applicabilities.append({**r, **ev})
     inventory_empty = not profile.get("technologies")
     # Pour une vulnérabilité, la pertinence se mesure au parc, pas aux thèmes technologiques évoqués
-    vuln_centric = cats[0] == "vulnerabilite" and bool(products or cves)
+    vuln_centric = (cats[0] == "vulnerabilite" and bool(products or cves)) or \
+        (cats[0] in ("menace", "incident") and bool(cves) and bool(products))
     pert_reasons = []
     if cats == ["non_pertinent"]:
         pertinence = "non_pertinent"
@@ -206,7 +212,7 @@ def analyze(article: dict, profile: dict, kev: dict[str, dict], cves_data: dict[
     elif any(a["resultat"] in ("a_qualifier", "non_evaluable") for a in applicabilities):
         pertinence = "a_qualifier"
         pert_reasons.append("Applicabilité du texte à qualifier.")
-    elif set(cats) & {"menace", "incident", "bonne_pratique"} and not products:
+    elif set(cats) & {"menace", "incident", "bonne_pratique"} and not (products and cves):
         pertinence = "moyenne"
         pert_reasons.append("Menace ou pratique générique, potentiellement transposable au SI de l'organisation.")
     else:
@@ -245,9 +251,14 @@ def analyze(article: dict, profile: dict, kev: dict[str, dict], cves_data: dict[
     if best_epss and best_epss[1] >= 0.1:
         add("Probabilité d'exploitation", 10 if best_epss[1] >= 0.5 else 5,
             f"EPSS {best_epss[1]:.2f} pour {best_epss[0]} (probabilité d'exploitation sous 30 jours).", True, "FIRST EPSS")
-    if inv:
+    inv_known = [m for m in inv if not m["marque_inconnue"]]
+    if inv_known:
         add("Présence dans le parc", 25, "Technologie(s) déclarée(s) dans l'inventaire : " +
-            ", ".join(m["nom"] for m in inv) + ".", True, "Inventaire de l'organisation (déclaratif)")
+            ", ".join(m["nom"] for m in inv_known) + ".", True, "Inventaire de l'organisation (déclaratif)")
+    elif inv:
+        add("Présence dans le parc", 10, "Type de produit présent dans le parc mais marque/modèle non documentés ("
+            + ", ".join(m["nom"] for m in inv) + ") : présence à confirmer.", False, "Inventaire de l'organisation (incomplet)")
+    if inv:
         if any(m["versions_citees"] for m in inv):
             add("Présence dans le parc", 5, "Version(s) du parc citée(s) : " +
                 ", ".join(v for m in inv for v in m["versions_citees"]) + ".", True, "Inventaire de l'organisation")
@@ -262,6 +273,10 @@ def analyze(article: dict, profile: dict, kev: dict[str, dict], cves_data: dict[
         if pts:
             add("Impact sur les activités", pts, f"Criticité métier déclarée de l'actif concerné : {crit}.", True,
                 "Inventaire de l'organisation")
+    if scenarios:
+        add("Scénario redouté", 10, "Lien avec un scénario redouté de l'organisation : " +
+            "; ".join(f"{x['nom']} (indices : {', '.join(x['declencheurs'][:3])})" for x in scenarios) + ".",
+            True, "Scénarios redoutés déclarés dans le profil")
     if article.get("source_id") == "certfr-alertes":
         add("Urgence", 10, "Alerte CERT-FR : l'autorité recommande une action rapide.", True, "CERT-FR")
     for a in applicabilities:
@@ -311,13 +326,13 @@ def analyze(article: dict, profile: dict, kev: dict[str, dict], cves_data: dict[
         priorite = "Faible"
     elif pertinence == "a_qualifier" and score < 50:
         priorite = "À qualifier"
-    elif score >= 75 and inv and verified_severity:
+    elif score >= 75 and inv_known and verified_severity:
         priorite = "Critique"
     elif score >= 50:
         priorite = "Élevée"
         if score >= 75:
             max_cap_reasons.append("Plafonné à « Élevée » : le niveau « Critique » exige une technologie du parc "
-                                   "concernée ET une gravité ou une exploitation vérifiée (KEV, CVSS ≥ 9, alerte CERT-FR).")
+                                   "identifiée (marque connue) ET une gravité ou une exploitation vérifiée (KEV, CVSS ≥ 9, alerte CERT-FR).")
     elif score >= 25:
         priorite = "Modérée"
     else:
@@ -347,7 +362,7 @@ def analyze(article: dict, profile: dict, kev: dict[str, dict], cves_data: dict[
     # ---------------------------------------------------------------- recommandations
     maturity = profile.get("maturite_cyber") or "reproductible"
     actions = _recommendations(cats, inv, products, kev_rows, declared_exploit, applicabilities, watched_themes,
-                               text, maturity, donnees)
+                               text, maturity, donnees, profile, scenarios)
 
     # ---------------------------------------------------------------- confiance et points à vérifier
     conf = {"elevee": 2, "moyenne": 1, "faible": 0}.get(article.get("source_confiance") or "moyenne", 1)
@@ -370,7 +385,9 @@ def analyze(article: dict, profile: dict, kev: dict[str, dict], cves_data: dict[
     if declared_exploit and not kev_rows:
         to_verify.append("Exploitation active signalée par la source mais non confirmée par le catalogue CISA KEV.")
     for m in inv:
-        if not m["versions_citees"]:
+        if m["marque_inconnue"]:
+            to_verify.append(f"Marque et modèle de « {m['nom']} » non documentés : confirmer auprès du gestionnaire si l'avis s'applique.")
+        elif not m["versions_citees"]:
             vp = ", ".join(m["versions_parc"]) or "non renseignées"
             to_verify.append(f"Versions affectées de {m['nom']} à comparer avec les versions du parc ({vp}).")
     missing_products = [p for p in products if not any(p.lower() in " ".join(x["mots"]).lower() for x in inv)]
@@ -440,7 +457,9 @@ def analyze(article: dict, profile: dict, kev: dict[str, dict], cves_data: dict[
         "categorie_principale": cats[0],
         "mots_cles": keywords,
         "technologies": [{"nom": m["nom"], "exposition": m["exposition"], "criticite": m["criticite"],
-                          "versions_citees": m["versions_citees"], "versions_parc": m["versions_parc"]} for m in inv],
+                          "versions_citees": m["versions_citees"], "versions_parc": m["versions_parc"],
+                          "gestion": m["gestion"], "marque_inconnue": m["marque_inconnue"]} for m in inv],
+        "scenarios": scenarios,
         "produits_cites": products,
         "cves": [{"id": c, "cvss": (cves_data.get(c) or {}).get("cvss_score"),
                   "cvss_version": (cves_data.get(c) or {}).get("cvss_version"),
@@ -499,36 +518,57 @@ def _summary_fr(article, cats, cves, products, inv, exploitation, themes, best_c
     return " ".join(parts), "synthese_regles"
 
 
-RESPONSABLES = {
-    "vulnerabilite": "Équipe infrastructure / exploitation (pilotage RSSI)",
-    "menace": "RSSI / équipe de supervision (SOC)",
-    "incident": "RSSI",
-    "reglementaire": "Juriste / DPO, avec le RSSI",
-    "normative": "RSSI / responsable du SMSI",
-    "technologie": "DSI / RSSI (étude d'opportunité)",
-    "bonne_pratique": "RSSI / administrateurs systèmes",
-    "non_pertinent": "—",
+# Catégorie → (rôle principal, rôle de pilotage) ; les noms viennent du profil (champ `responsables`)
+ROLE_PAR_CATEGORIE = {
+    "vulnerabilite": ("exploitation", "securite"),
+    "menace": ("supervision", "securite"),
+    "incident": ("securite", None),
+    "reglementaire": ("juridique", "securite"),
+    "normative": ("securite", "qualite"),
+    "technologie": ("direction", "securite"),
+    "bonne_pratique": ("securite", "exploitation"),
+    "non_pertinent": ("securite", None),
 }
 
 
+def responsable_for(cat: str, profile: dict, inv: list[dict] | None = None) -> str:
+    from veille.organisation import RESPONSABLES_DEFAUT
+    names = {**RESPONSABLES_DEFAUT, **(profile.get("responsables") or {})}
+    if cat == "vulnerabilite" and inv and all(m.get("gestion") == "infogerant" for m in inv):
+        return f"{names['infogerant']} (exécution) — suivi : {names['securite']}"
+    main, pilot = ROLE_PAR_CATEGORIE.get(cat, ("securite", None))
+    return names[main] + (f" — pilotage : {names[pilot]}" if pilot and names[pilot] != names[main] else "")
+
+
 def _recommendations(cats, inv, products, kev_rows, declared_exploit, applicabilities, watched_themes, text,
-                     maturity, donnees) -> list[dict]:
+                     maturity, donnees, profile=None, scenarios=None) -> list[dict]:
     """Recommandations proportionnées (aucune action automatique sur le SI)."""
     recs = []
     low_maturity = maturity in ("initiale", "reproductible")
     names = ", ".join(m["nom"] for m in inv)
     if "vulnerabilite" in cats:
         if inv:
+            for m in inv:
+                if m["marque_inconnue"]:
+                    recs.append({"type": "Vérification de l'exposition", "action": f"Identifier la marque, le modèle et la version de « {m['nom']} » (non documentés) auprès du gestionnaire pour déterminer si l'avis s'applique, puis compléter l'inventaire."})
             recs.append({"type": "Vérification de l'exposition", "action": f"Vérifier la présence et les versions de {names} concernées par l'avis (inventaire, outil de gestion de parc)."})
-            recs.append({"type": "Mise à jour", "action": "Appliquer le correctif de l'éditeur selon la procédure de gestion des correctifs (test, puis déploiement prioritaire)."})
+            managed = [m for m in inv if m["gestion"] == "infogerant"]
+            saas = [m for m in inv if m["gestion"] == "editeur_saas"]
+            internal = [m for m in inv if m["gestion"] not in ("infogerant", "editeur_saas")]
+            if internal:
+                recs.append({"type": "Mise à jour", "action": "Appliquer le correctif de l'éditeur selon la procédure de gestion des correctifs (test, puis déploiement prioritaire)."})
+            if managed:
+                recs.append({"type": "Mise à jour", "action": f"Demander à l'infogérant l'application du correctif sur {', '.join(m['nom'] for m in managed)} et une confirmation écrite (modèle, version, date), à conserver comme preuve."})
+            if saas:
+                recs.append({"type": "Contrôle de configuration", "action": f"Service géré par le fournisseur ({', '.join(m['nom'] for m in saas)}) : vérifier l'avis du fournisseur et les actions éventuellement requises côté client (configuration, MFA, journaux) — responsabilité partagée."})
             if any(m["exposition"] in ("internet", "dmz") for m in inv):
                 recs.append({"type": "Mesure compensatoire", "action": "En attendant le correctif, réduire l'exposition (filtrage des accès, désactivation de la fonctionnalité vulnérable) selon les recommandations de l'éditeur."})
             if kev_rows or declared_exploit:
-                recs.append({"type": "Vérification de compromission", "action": "Rechercher des traces d'exploitation dans les journaux (SIEM/EDR) depuis la date de divulgation et appliquer les indicateurs publiés."})
+                recs.append({"type": "Vérification de compromission", "action": "Rechercher des traces d'exploitation dans les journaux disponibles (serveurs concernés, contrôleurs de domaine, pare-feu, SIEM/EDR s'il existe) depuis la date de divulgation, à l'aide des indicateurs publiés."})
         elif products:
             recs.append({"type": "Vérification de l'exposition", "action": f"Vérifier si {', '.join(products[:4])} est utilisé dans le SI (inventaire potentiellement incomplet) ; sinon, classer l'information comme non applicable."})
     if "menace" in cats:
-        recs.append({"type": "Contrôle de configuration", "action": "Vérifier la couverture de détection (règles SIEM/EDR) des techniques et indicateurs décrits."})
+        recs.append({"type": "Contrôle de configuration", "action": "Vérifier la capacité à détecter les techniques et indicateurs décrits (antivirus/EDR, journaux, SIEM s'il existe) ; à défaut, l'intégrer au projet de supervision."})
         if find_terms(text, ["hameçonnage", "phishing", "ingénierie sociale", "social engineering", "arnaque", "scam"]):
             recs.append({"type": "Sensibilisation", "action": "Informer les utilisateurs du mode opératoire décrit (message de sensibilisation ciblé)."})
         if find_terms(text, ["rançongiciel", "ransomware", "wiper"]):
@@ -540,7 +580,7 @@ def _recommendations(cats, inv, products, kev_rows, declared_exploit, applicabil
             if a["nature"] == "obligation_legale":
                 recs.append({"type": "Analyse de conformité", "action": f"Qualifier l'applicabilité de « {a['nom']} » avec le juriste/DPO puis, si applicable, réaliser une analyse d'écarts et mettre à jour le registre des exigences."})
             else:
-                recs.append({"type": "Analyse de conformité", "action": f"Évaluer l'impact de l'évolution de « {a['nom']} » ({a['nature_libelle'].lower()}) sur le SMSI, la déclaration d'applicabilité et les engagements contractuels."})
+                recs.append({"type": "Analyse de conformité", "action": f"Évaluer l'impact de l'évolution de « {a['nom']} » ({a['nature_libelle'].lower()}) sur les pratiques de sécurité, les engagements contractuels et, le cas échéant, le SMSI."})
     if "normative" in cats and donnees.get("evenement") == "changement":
         recs.append({"type": "Étude complémentaire", "action": "Consulter la page officielle de la norme pour confirmer l'évolution et planifier, le cas échéant, la transition (documentation, audit)."})
     if "reglementaire" in cats and not applicabilities:
@@ -553,8 +593,11 @@ def _recommendations(cats, inv, products, kev_rows, declared_exploit, applicabil
         recs.append({"type": "Étude complémentaire", "action": "Prendre connaissance de l'information ; aucune action spécifique identifiée à ce stade."})
     if low_maturity and recs:
         recs.append({"type": "Proportionnalité", "action": "Maturité cyber déclarée faible : privilégier les mesures simples et à fort effet (correctifs, MFA, sauvegardes) avant les projets structurants."})
+    if scenarios and recs:
+        recs.append({"type": "Étude complémentaire", "action": "Mettre à jour l'analyse du scénario redouté « " + scenarios[0]["nom"]
+                     + " » (vraisemblance, mesures existantes) au vu de cette information."})
     for r in recs:
-        r["responsable"] = RESPONSABLES.get(cats[0], "RSSI")
+        r["responsable"] = responsable_for(cats[0], profile or {}, inv)
     # dédoublonnage en conservant l'ordre
     seen, out = set(), []
     for r in recs:

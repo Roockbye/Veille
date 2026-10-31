@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import streamlit as st  # noqa: E402
 
-st.set_page_config(page_title="Veille cybersécurité — B1.A1.C3", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="Veille cybersécurité", page_icon="🛡️", layout="wide")
 
 from ui import CSS, ensure_scheduler, get_storage, profile  # noqa: E402
 from views import (automatisation, configuration, dashboard, flux, plan, rapports, reglementaire, sources,  # noqa: E402
@@ -39,8 +39,8 @@ nav = st.navigation(pages)
 with st.sidebar:
     p = profile()
     st.markdown(f"**{p.get('nom') or 'Organisation non configurée'}**")
-    if p.get("demonstration"):
-        st.caption("⚠️ Profil de démonstration (fictif)")
+    if p.get("fictive"):
+        st.caption("Organisation fictive (cas d'étude)")
     last = storage.query("SELECT debut, statut FROM executions WHERE type = 'collecte' ORDER BY id DESC LIMIT 1")
     st.caption(f"Dernière collecte : {last[0]['debut'][:16].replace('T', ' ')} UTC ({last[0]['statut']})" if last else "Aucune collecte effectuée")
     st.caption("Outil de veille et d'aide à la décision — aucune action automatique sur le SI.")

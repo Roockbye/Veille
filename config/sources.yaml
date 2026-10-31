@@ -4,6 +4,7 @@
 #
 # Toutes les URL marquées `actif: true` ont été vérifiées le 2026-10-29 (HTTP 200, flux analysable).
 # Note : le CERT-FR a migré de www.cert.ssi.gouv.fr vers cert.cyber.gouv.fr (redirection 302 constatée le 2026-10-29).
+# Sources aéronautiques (EASA, BoostAeroSpace), nginx et Sénat ajoutées et vérifiées le 2026-10-31 pour le profil AéroStar.
 # Les sources inaccessibles en collecte automatique sont conservées avec `actif: false`, un statut
 # explicite et une alternative documentée : rien n'est contourné.
 #
@@ -440,7 +441,7 @@ sources:
     confiance: elevee
     langue: fr
     frequence_minutes: 1440
-    filtre_mots_cles: [cybersécurité, cyber, sécurité des réseaux, systèmes d'information, données à caractère personnel, protection des données, intelligence artificielle, résilience opérationnelle, numérique, identité électronique, services de confiance, cyberrésilience, 2022/2555, 2022/2554, 2024/1689, 2024/2847, 2016/679]
+    filtre_mots_cles: [double usage, 2021/821, aviation, sécurité aérienne, 2022/1645, 2023/203, cybersécurité, cyber, sécurité des réseaux, systèmes d'information, données à caractère personnel, protection des données, intelligence artificielle, résilience opérationnelle, numérique, identité électronique, services de confiance, cyberrésilience, 2022/2555, 2022/2554, 2024/1689, 2024/2847, 2016/679]
     justification: >-
       Source officielle des textes législatifs de l'UE (identifiant CELEX, date de publication).
       Flux généraliste : un filtre par mots-clés ne conserve que les textes liés au numérique et à la sécurité.
@@ -472,7 +473,7 @@ sources:
     confiance: elevee
     langue: fr
     frequence_minutes: 1440
-    filtre_mots_cles: [cybersécurité, cyber, sécurité des réseaux, données à caractère personnel, intelligence artificielle, résilience opérationnelle, numérique, identité électronique, services de confiance, cyberrésilience, 2022/2555, 2022/2554, 2024/1689, 2024/2847]
+    filtre_mots_cles: [double usage, 2021/821, aviation, sécurité aérienne, 2022/1645, 2023/203, cybersécurité, cyber, sécurité des réseaux, données à caractère personnel, intelligence artificielle, résilience opérationnelle, numérique, identité électronique, services de confiance, cyberrésilience, 2022/2555, 2022/2554, 2024/1689, 2024/2847]
     justification: Actes publiés au JOUE, notamment les règlements d'exécution et délégués précisant NIS2, DORA, AI Act, CRA.
     actif: true
 
@@ -518,7 +519,9 @@ sources:
     frequence_minutes: 1440
     filtre_mots_cles: [DORA, ICT, cyber, operational resilience, third-party, outsourcing]
     justification: Normes techniques et orientations liées à DORA pour le secteur financier.
-    actif: true
+    alternative: >-
+      Désactivée pour le profil AéroStar : DORA ne concerne que le secteur financier (applicabilité peu probable). À réactiver si l'organisation travaille pour des entités financières.
+    actif: false
 
   - id: aiact-fli
     nom: artificialintelligenceact.eu (non officiel)
@@ -637,6 +640,106 @@ sources:
     justification: Référentiels de bonnes pratiques pour la sécurité de la chaîne d'approvisionnement logicielle (SLSA, SBOM).
     actif: true
 
+  - id: senat-textes
+    nom: Sénat — Derniers textes (filtrés)
+    url: https://www.senat.fr/rss/textes.xml
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Textes français en discussion (transposition NIS 2)
+    organisme: Sénat
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 1440
+    filtre_mots_cles: [cybersécurité, cyberattaque, résilience des infrastructures critiques, NIS 2, NIS2, 2022/2555, sécurité des systèmes d'information, protection des données personnelles, intelligence artificielle]
+    justification: >-
+      Textes déposés et adoptés au Sénat : permet de suivre l'avancement du projet de loi de transposition de NIS 2
+      (en discussion au Parlement en octobre 2026), Légifrance n'étant pas collectable automatiquement.
+    actif: true
+
+  - id: senat-rapports
+    nom: Sénat — Derniers rapports (filtrés)
+    url: https://www.senat.fr/rss/rapports.xml
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Rapports parlementaires
+    organisme: Sénat
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 1440
+    filtre_mots_cles: [cybersécurité, cyberattaque, résilience des infrastructures critiques, NIS 2, NIS2, 2022/2555, sécurité des systèmes d'information, souveraineté numérique, intelligence artificielle]
+    justification: Rapports de commission (dont ceux sur le projet de loi de transposition NIS 2) éclairant le contenu et le calendrier des obligations.
+    actif: true
+
+  - id: easa-news
+    nom: EASA — Actualités (filtrées cybersécurité)
+    url: https://www.easa.europa.eu/en/newsroom-and-events/news/feed.xml
+    type: rss
+    categorie: reglementaire
+    sous_categorie: Aviation — sécurité de l'information (Part-IS)
+    organisme: Agence de l'Union européenne pour la sécurité aérienne
+    nature: officielle
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    filtre_mots_cles: [cyber, information security, Part-IS, cybersecurity, security risk]
+    justification: >-
+      Autorité européenne de l'aviation : publications relatives au règlement Part-IS (sécurité de l'information),
+      susceptibles d'être répercutées par les clients de rang 1 sur leurs sous-traitants.
+    actif: true
+
+  - id: boostaerospace
+    nom: BoostAeroSpace — Actualités (AirCyber)
+    url: https://boostaerospace.com/feed/
+    type: rss
+    categorie: normative
+    sous_categorie: Filière aéronautique — référentiel AirCyber
+    organisme: BoostAeroSpace
+    nature: officielle
+    confiance: elevee
+    langue: fr
+    frequence_minutes: 10080
+    justification: >-
+      Opérateur du référentiel de maturité AirCyber exigé par les clients (Bronze fin 2027). Flux valide mais sans
+      publication au 31/10/2026 ; surveillé pour détecter toute évolution du programme.
+    actif: true
+
+  - id: dassault-advisories
+    nom: Dassault Systèmes — Avis de sécurité (Trust Center)
+    url: https://www.3ds.com/trust-center/security/security-advisories
+    type: manuel
+    categorie: technique
+    sous_categorie: Éditeur — CAO (CATIA, 3DEXPERIENCE)
+    organisme: Dassault Systèmes
+    nature: editeur
+    confiance: elevee
+    langue: en
+    frequence_minutes: 10080
+    statut_initial: bloque
+    technologies: [CATIA, 3DEXPERIENCE, DSLS]
+    justification: Éditeur des outils métier critiques du bureau d'études (CATIA V5, 3DEXPERIENCE, serveur de licences).
+    alternative: >-
+      Pas de flux RSS publié (page HTML uniquement, vérifié le 31/10/2026). Les CVE Dassault Systèmes remontent par le
+      NVD, le catalogue CISA KEV et les avis CERT-FR, collectés automatiquement ; consultation manuelle mensuelle de la page.
+    actif: false
+
+  - id: nginx-news
+    nom: nginx — Actualités (correctifs de sécurité)
+    url: https://nginx.org/index.rss
+    type: rss
+    categorie: technique
+    sous_categorie: Éditeur — serveur web
+    organisme: nginx
+    nature: editeur
+    confiance: elevee
+    langue: en
+    frequence_minutes: 1440
+    filtre_mots_cles: [security, vulnerab, CVE]
+    technologies: [nginx]
+    justification: Annonces officielles de versions correctives de nginx (serveur de l'intranet).
+    actif: true
+
   # ------------------------------------------------------------------ D. Veille technologique
   - id: google-security-blog
     nom: Google Online Security Blog
@@ -665,7 +768,9 @@ sources:
     frequence_minutes: 1440
     technologies: [AWS]
     justification: Nouveautés et bonnes pratiques de sécurité AWS (IAM, détection, chiffrement).
-    actif: true
+    alternative: >-
+      Désactivée pour le profil AéroStar : pas d'usage d'AWS déclaré (le cloud se limite à Microsoft 365 et à l'ERP en SaaS). À réactiver si besoin.
+    actif: false
 
   - id: cloudflare-blog
     nom: Cloudflare Blog
@@ -695,7 +800,9 @@ sources:
     filtre_mots_cles: [security, CVE, vulnerab, RBAC, policy, secret, supply chain, deprecat]
     technologies: [Kubernetes]
     justification: Annonces officielles du projet Kubernetes (fonctionnalités de sécurité, dépréciations).
-    actif: true
+    alternative: >-
+      Désactivée pour le profil AéroStar : pas de conteneurs dans le SI. À réactiver si un projet d'orchestration de conteneurs est lancé.
+    actif: false
 
   - id: cncf
     nom: CNCF — Blog
@@ -710,7 +817,9 @@ sources:
     frequence_minutes: 1440
     filtre_mots_cles: [security, zero trust, SBOM, supply chain, identity, policy, observability, AI]
     justification: Tendances cloud natif (sécurité des conteneurs, identité des charges de travail, IA).
-    actif: true
+    alternative: >-
+      Désactivée pour le profil AéroStar : pas d'environnement cloud natif. À réactiver si besoin.
+    actif: false
 
   - id: github-security-blog
     nom: GitHub Blog — Security

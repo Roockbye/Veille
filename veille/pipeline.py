@@ -15,7 +15,7 @@ log = logging.getLogger("veille.pipeline")
 
 
 def current_profile() -> dict:
-    """Profil réel si configuré, sinon profil de démonstration (signalé comme tel dans les hypothèses)."""
+    """Profil enregistré (config/organisation.yaml) si présent, sinon profil d'exemple AéroStar (organisation fictive)."""
     return load_profile() if has_profile() else load_demo_profile()
 
 

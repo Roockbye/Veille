@@ -33,27 +33,48 @@ def test_classification_multi_categories():
     assert classify("Friday squid blogging", "")["categories"] == ["non_pertinent"]
 
 
-def test_aucun_cvss_invente(demo_profile):
-    a = analyze(art("Vulnerability in FortiOS (CVE-2099-1111)", "A flaw allows code execution."), demo_profile, {}, {})
+def test_aucun_cvss_invente(profil):
+    a = analyze(art("Vulnerability in Dassault Systèmes 3DEXPERIENCE (CVE-2099-1111)", "A flaw allows code execution."), profil, {}, {})
     cve = a["cves"][0]
     assert cve["cvss"] is None and cve["kev"] is False
     assert not any(f["facteur"] == "Gravité technique" and f["verifie"] for f in a["facteurs"])
     assert any("CVSS de CVE-2099-1111 non disponible" in v for v in a["a_verifier"])
 
 
-def test_exploitation_kev_verifiee_et_critique(demo_profile):
-    kev = {"CVE-2099-0001": {"cve_id": "CVE-2099-0001", "fournisseur": "Fortinet", "produit": "FortiOS", "rancongiciel": "Known"}}
-    cves = {"CVE-2099-0001": {"cvss_score": 9.8, "cvss_version": "3.1", "severite": "CRITICAL", "cvss_source": "NVD"}}
-    a = analyze(art("FortiGate SSL-VPN vulnerability CVE-2099-0001", "Remote code execution in FortiOS 7.4."), demo_profile, kev, cves)
+def test_exploitation_kev_verifiee_et_critique(profil):
+    kev = {"CVE-2099-0001": {"cve_id": "CVE-2099-0001", "fournisseur": "Microsoft", "produit": "Windows Netlogon", "rancongiciel": "Known"}}
+    cves = {"CVE-2099-0001": {"cvss_score": 10.0, "cvss_version": "3.1", "severite": "CRITICAL", "cvss_source": "NVD"}}
+    a = analyze(art("Windows Server Netlogon elevation of privilege CVE-2099-0001",
+                    "Attackers can take over an Active Directory domain controller."), profil, kev, cves)
     assert a["priorite"] == "Critique"
     expl = next(f for f in a["facteurs"] if f["facteur"] == "_exploitation")
     assert expl["verifie"] and "KEV" in expl["justification"]
     assert a["echeance"] and "48 h" in a["urgence"]
-    assert any(r["type"] == "Mesure compensatoire" for r in a["actions"])  # technologie exposée sur Internet
+    assert any(r["type"] == "Vérification de compromission" for r in a["actions"])
+    assert a["scenarios"][0]["nom"].startswith("Rançongiciel")  # scénario redouté d'AéroStar
+    assert any(f["facteur"] == "Scénario redouté" for f in a["facteurs"])
+    assert a["actions"][0]["responsable"].startswith("Équipe IT interne")  # responsables du profil, pas « RSSI »
 
 
-def test_exploitation_declaree_non_verifiee(demo_profile):
-    a = analyze(art("FortiOS flaw actively exploited", "Attackers are actively exploiting FortiGate."), demo_profile, {}, {})
+def test_equipement_infogere_marque_inconnue(profil):
+    kev = {"CVE-2099-7777": {"cve_id": "CVE-2099-7777"}}
+    a = analyze(art("SSL VPN appliance flaw CVE-2099-7777", "Unauthenticated remote code execution in a SSL VPN gateway."),
+                profil, kev, {"CVE-2099-7777": {"cvss_score": 9.8}})
+    assert a["technologies"][0]["gestion"] == "infogerant" and a["technologies"][0]["marque_inconnue"]
+    assert a["priorite"] == "Élevée"  # présence non confirmée : jamais « Critique »
+    assert "Identifier la marque" in a["actions"][0]["action"]
+    assert any("infogérant" in r["action"] and "confirmation écrite" in r["action"] for r in a["actions"])
+    assert any("non documentés" in v for v in a["a_verifier"])
+
+
+def test_service_saas_responsabilite_partagee(profil):
+    a = analyze(art("Exchange Online vulnerability CVE-2099-8888", "A flaw in Exchange Online allows spoofing."), profil, {}, {})
+    assert any("responsabilité partagée" in r["action"] for r in a["actions"])
+    assert not any(r["type"] == "Mise à jour" for r in a["actions"])
+
+
+def test_exploitation_declaree_non_verifiee(profil):
+    a = analyze(art("CATIA flaw actively exploited", "Attackers are actively exploiting 3DEXPERIENCE servers."), profil, {}, {})
     expl = next(f for f in a["facteurs"] if f["facteur"] == "_exploitation")
     assert not expl["verifie"] and "non confirmée" in expl["justification"]
     assert a["priorite"] != "Critique"  # pas de gravité vérifiée
@@ -65,31 +86,31 @@ def test_inventaire_vide_a_qualifier():
     assert a["priorite"] == "À qualifier" and a["pertinence"] == "a_qualifier"
 
 
-def test_ancien_article_plafonne(demo_profile):
-    kev = {"CVE-2099-0001": {"cve_id": "CVE-2099-0001", "fournisseur": "Fortinet", "produit": "FortiOS"}}
-    a = analyze(art("FortiOS CVE-2099-0001", "code execution", publie_le="2020-01-01T00:00:00+00:00"), demo_profile, kev,
-                {"CVE-2099-0001": {"cvss_score": 9.8}})
+def test_ancien_article_plafonne(profil):
+    kev = {"CVE-2099-0001": {"cve_id": "CVE-2099-0001"}}
+    a = analyze(art("Windows Server Active Directory CVE-2099-0001", "privilege escalation", publie_le="2020-01-01T00:00:00+00:00"),
+                profil, kev, {"CVE-2099-0001": {"cvss_score": 9.8}})
     assert a["priorite"] in ("Modérée", "Faible") and any(f["facteur"] == "Ancienneté" for f in a["facteurs"])
 
 
-def test_termes_kev_limites_aux_fiches_kev(demo_profile):
+def test_termes_kev_limites_aux_fiches_kev(profil):
     """Un CVE Chromium (KEV) cité dans un avis industriel ne doit pas rattacher l'avis au navigateur du parc."""
     kev = {"CVE-2023-4863": {"cve_id": "CVE-2023-4863", "fournisseur": "Google", "produit": "Chromium WebP"}}
     a = analyze(art("Mitsubishi Electric GENESIS64 vulnerabilities", "CVE-2023-4863 allows code execution in ICONICS."),
-                demo_profile, kev, {})
+                profil, kev, {})
     assert a["technologies"] == [] and a["priorite"] != "Critique"
 
 
-def test_recommandation_jamais_obligation(demo_profile):
+def test_recommandation_jamais_obligation(profil):
     a = analyze(art("Nouvelle version du guide d'hygiène informatique de l'ANSSI", "L'ANSSI publie des recommandations.",
-                    source_categorie="normative", langue="fr"), demo_profile, {}, {})
+                    source_categorie="normative", langue="fr"), profil, {}, {})
     assert a["normatif"]["type"] == "recommandation"
     assert "ne constitue pas une obligation légale" in a["normatif"]["avertissement"]
 
 
-def test_fiche_reglementaire(demo_profile):
+def test_fiche_reglementaire(profil):
     a = analyze(art("Proposal to amend Directive (EU) 2022/2555 (NIS2)", "The Commission adopted a proposal. Entry into force on 1 January 2027.",
-                    source_categorie="reglementaire", url="https://eur-lex.europa.eu/x?uri=CELEX:52026PC0001"), demo_profile, {}, {})
+                    source_categorie="reglementaire", url="https://eur-lex.europa.eu/x?uri=CELEX:52026PC0001"), profil, {}, {})
     reg = a["reglementaire"]
     assert reg["statut_detecte"].startswith("Projet")
     assert any(t["id"] == "nis2" for t in reg["textes"])
@@ -98,10 +119,10 @@ def test_fiche_reglementaire(demo_profile):
                for t in reg["textes"])
 
 
-def test_resume_francais_extrait_ou_synthese(demo_profile):
-    fr = analyze(art("Avis", "Une vulnérabilité a été découverte dans PHP. Elle permet une exécution de code.", langue="fr"), demo_profile, {}, {})
+def test_resume_francais_extrait_ou_synthese(profil):
+    fr = analyze(art("Avis", "Une vulnérabilité a été découverte dans nginx. Elle permet une exécution de code.", langue="fr"), profil, {}, {})
     assert fr["methode_resume"] == "extrait_source"
-    en = analyze(art("PHP flaw", "A vulnerability in PHP allows code execution."), demo_profile, {}, {})
+    en = analyze(art("nginx flaw", "A vulnerability in nginx allows code execution."), profil, {}, {})
     assert en["methode_resume"] == "synthese_regles" and "sans traduction" in en["resume_fr"]
 
 
@@ -109,15 +130,33 @@ def test_extraction_dates():
     assert extract_dates("applicable le 17 janvier 2025 et le 2026-09-11, puis August 2, 2026") == ["2025-01-17", "2026-08-02", "2026-09-11"]
 
 
-def test_produit_hors_parc_plafonne(demo_profile):
+def test_produit_hors_parc_plafonne(profil):
     kev = {"CVE-2015-3306": {"cve_id": "CVE-2015-3306", "fournisseur": "ProFTPD", "produit": "ProFTPD"}}
     a = analyze(art("[KEV] CVE-2015-3306 — ProFTPD", "ProFTPD improper access control.", source_type="cisa_kev",
-                    donnees={"kev": kev["CVE-2015-3306"]}), demo_profile, kev, {"CVE-2015-3306": {"cvss_score": 9.8}})
+                    donnees={"kev": kev["CVE-2015-3306"]}), profil, kev, {"CVE-2015-3306": {"cvss_score": 9.8}})
     assert a["pertinence"] == "faible" and a["priorite"] == "Modérée"
     assert any("vérifier si ProFTPD" in r["action"].lower() or "ProFTPD" in r["action"] for r in a["actions"])
 
 
-def test_theme_ne_rend_pas_pertinente_une_vulnerabilite_hors_parc(demo_profile):
+def test_theme_ne_rend_pas_pertinente_une_vulnerabilite_hors_parc(profil):
     a = analyze(art("[KEV] CVE-2099-3333 — Siemens SCADA supply chain flaw", "Siemens SCADA software supply chain vulnerability."),
-                demo_profile, {"CVE-2099-3333": {"cve_id": "CVE-2099-3333"}}, {"CVE-2099-3333": {"cvss_score": 9.8}})
+                profil, {"CVE-2099-3333": {"cve_id": "CVE-2099-3333"}}, {"CVE-2099-3333": {"cvss_score": 9.8}})
     assert a["pertinence"] == "faible" and a["priorite"] == "Modérée"
+
+
+def test_exclusions_inventaire(profil):
+    a = analyze(art("Multiples vulnérabilités dans Veeam Backup for Microsoft 365", "Veeam corrige des failles.", langue="fr"), profil, {}, {})
+    assert a["technologies"] == []
+
+
+def test_menace_sur_produit_hors_parc_plafonnee(profil):
+    kev = {"CVE-2099-5555": {"cve_id": "CVE-2099-5555"}}
+    a = analyze(art("Threat actors exploit PHP flaw CVE-2099-5555 in ransomware campaign", "Attackers deploy ransomware via PHP."),
+                profil, kev, {"CVE-2099-5555": {"cvss_score": 9.8, "epss": 0.9}})
+    assert a["pertinence"] == "faible" and a["priorite"] == "Modérée"
+
+
+def test_produit_issu_du_kev_pour_un_nom_de_campagne(profil):
+    kev = {"CVE-2099-6666": {"cve_id": "CVE-2099-6666", "fournisseur": "PHP Group", "produit": "PHP"}}
+    a = analyze(art("Threat intel identifies PHP2Shell exploitation", "Exploitation of CVE-2099-6666 observed."), profil, kev, {})
+    assert "PHP" in a["produits_cites"] and a["technologies"] == [] and a["priorite"] in ("Modérée", "Faible")

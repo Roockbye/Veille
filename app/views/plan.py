@@ -18,12 +18,12 @@ def render():
         acts = [a for a in acts if a["priorite"] in prios]
     if q:
         acts = [a for a in acts if q.lower() in f"{a['constat']} {a['action']} {a.get('responsable')}".lower()]
-    st.caption(f"{len(acts)} action(s). Colonnes modifiables : statut, responsable, échéance, effort, commentaire.")
+    st.caption(f"{len(acts)} action(s). Colonnes modifiables : statut, responsable, échéance, effort, coût estimé, commentaire.")
     if acts:
         df = pd.DataFrame([{"id": a["id"], "Priorité": a["priorite"], "Constat": a["constat"], "Risque / opportunité": a.get("risque"),
                             "Action proposée": a["action"], "Justification": a.get("justification"), "Responsable": a.get("responsable"),
                             "Échéance": pd.to_datetime(a.get("echeance"), errors="coerce"), "Effort": a.get("effort"),
-                            "Bénéfice attendu": a.get("benefice"), "Preuves de réalisation": a.get("preuves"),
+                            "Bénéfice attendu": a.get("benefice"), "Coût estimé": a.get("cout_estime") or "", "Preuves de réalisation": a.get("preuves"),
                             "Statut": a["statut"], "Commentaire": a.get("commentaire") or "", "Origine": a["origine"]} for a in acts])
         edited = st.data_editor(
             df, hide_index=True, width="stretch", height=520, key="plan_editor",
@@ -41,7 +41,8 @@ def render():
             for _, row in edited.iterrows():
                 orig = df[df["id"] == row["id"]].iloc[0]
                 fields = {}
-                for col, key in [("Statut", "statut"), ("Responsable", "responsable"), ("Effort", "effort"), ("Commentaire", "commentaire")]:
+                for col, key in [("Statut", "statut"), ("Responsable", "responsable"), ("Effort", "effort"), ("Coût estimé", "cout_estime"),
+                                 ("Commentaire", "commentaire")]:
                     if row[col] != orig[col] and not (pd.isna(row[col]) and pd.isna(orig[col])):
                         fields[key] = None if pd.isna(row[col]) else str(row[col])[:2000]
                 ech_new = None if pd.isna(row["Échéance"]) else pd.Timestamp(row["Échéance"]).date().isoformat()
@@ -68,13 +69,14 @@ def render():
         resp = c[1].text_input("Responsable", max_chars=120)
         ech = c[2].date_input("Échéance indicative")
         effort = c[3].selectbox("Effort", list(EFFORTS), format_func=EFFORTS.get)
-        benef = st.text_input("Bénéfice attendu", max_chars=500)
+        benef = st.text_input("Bénéfice attendu (client conservé, prime d'assurance, aide mobilisable…)", max_chars=500)
+        cout = st.text_input("Coût estimé (montant, jours-homme, financement)", max_chars=200)
         preuves = st.text_input("Preuves de réalisation", max_chars=500)
         if st.form_submit_button("Ajouter"):
             try:
                 storage.add_manual_action({"constat": constat.strip(), "risque": risque, "action": action.strip(), "justification": justif,
                                            "priorite": prio, "responsable": resp, "echeance": ech.isoformat(), "effort": effort,
-                                           "benefice": benef, "preuves": preuves})
+                                           "benefice": benef, "preuves": preuves, "cout_estime": cout})
                 st.success("Action ajoutée.")
             except ValueError as exc:
                 st.error(str(exc))

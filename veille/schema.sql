@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS analyses (
     technologies        TEXT,                -- JSON liste des technologies du parc concernées
     produits_cites      TEXT,                -- JSON liste
     themes              TEXT,                -- JSON liste des thèmes technologiques détectés
+    scenarios           TEXT,                -- JSON liste des scénarios redoutés de l'organisation concernés
     cves                TEXT,                -- JSON liste
     impacts             TEXT,                -- JSON liste : confidentialite, integrite, disponibilite, conformite
     pertinence          TEXT NOT NULL,       -- forte | moyenne | faible | a_qualifier | non_pertinent
@@ -153,6 +154,7 @@ CREATE TABLE IF NOT EXISTS actions (
     effort          TEXT CHECK (effort IN ('faible','moyen','eleve')),
     benefice        TEXT,
     preuves         TEXT,
+    cout_estime     TEXT,                     -- chiffrage (montant, jours-homme, aide mobilisable)
     statut          TEXT NOT NULL DEFAULT 'a_etudier'
                     CHECK (statut IN ('a_etudier','a_valider','planifiee','en_cours','terminee','abandonnee')),
     commentaire     TEXT,

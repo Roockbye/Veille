@@ -26,7 +26,7 @@ def render_markdown(doc) -> str:
             out.append(f"# {esc(b['title'])}\n\n**{esc(b['subtitle'])}**\n\n## {esc(b['org'])}\n")
             out += [f"- {esc(l)}" for l in b["lines"]]
             if b["demo"]:
-                out.append("\n> **DONNÉES DE DÉMONSTRATION** — organisation fictive ; les éléments de veille sont réellement collectés.")
+                out.append("\n> **ORGANISATION FICTIVE (cas d'étude)** — les éléments de veille sont réellement collectés.")
             out.append("\n---\n")
         elif t == "h1":
             out.append(f"\n## {esc(b['text'])}\n")
@@ -45,7 +45,8 @@ def render_markdown(doc) -> str:
             out.append("| " + " | ".join(esc(h) for h in b["head"]) + " |")
             out.append("|" + "|".join("---" for _ in b["head"]) + "|")
             for row in b["rows"]:
-                cells = [(_link(c) if c.startswith(("http://", "https://")) else esc(c)) for c in map(str, row)]
+                cells = [(" ".join(_link(u) for u in c.split()) if c.startswith(("http://", "https://")) else esc(c))
+                         for c in map(str, row)]
                 out.append("| " + " | ".join(cells) + " |")
             out.append("")
         elif t == "card":

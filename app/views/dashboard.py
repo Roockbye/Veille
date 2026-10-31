@@ -56,6 +56,18 @@ def render():
     m[4].metric("Sources fonctionnelles", src_ok, f"-{src_err} en erreur" if src_err else "aucune erreur", delta_color="inverse" if src_err else "off")
     m[5].metric("Dernière collecte", last[0]["debut"][:10] if last else "—", last[0]["statut"] if last else None, delta_color="off")
 
+    from ui import profile
+    from veille.knowledge import applicability_matrix
+    from veille.reports.builder import upcoming_deadlines
+    p = profile()
+    ech = upcoming_deadlines(p, applicability_matrix(p), utcnow().date())
+    if ech:
+        st.subheader("Échéances à venir")
+        cols = st.columns(min(len(ech), 4))
+        for col, e in zip(cols, ech[:4]):
+            col.metric(e["libelle"][:60] + ("…" if len(e["libelle"]) > 60 else ""), e["quand"], e["origine"], delta_color="off",
+                       help=e["libelle"])
+
     if not total:
         st.info("Aucune donnée : lancez une première collecte avec le bouton ci-dessus (quelques minutes).")
         return
@@ -102,6 +114,17 @@ def render():
             st.success("Aucune alerte critique ou élevée en attente.")
         for r in rows:
             st.markdown(f"{prio_badge(r['priorite'])} {link(r['titre'], r['url'])} — _{esc(r['source'])}_ — échéance {r['echeance']}")
+        if p.get("scenarios_redoutes"):
+            st.subheader("Éléments liés aux scénarios redoutés")
+            rows_sc = q("""SELECT a.titre, a.url, n.priorite, n.scenarios FROM analyses n JOIN articles a ON a.id = n.article_id
+                           WHERE n.scenarios IS NOT NULL AND n.scenarios != '[]' AND n.priorite IN ('Critique','Élevée','Modérée')
+                             AND a.statut NOT IN ('traite','non_pertinent')
+                           ORDER BY n.score DESC LIMIT 200""")
+            for sc in p["scenarios_redoutes"]:
+                linked = [r for r in rows_sc if any(x["nom"] == sc["nom"] for x in r["scenarios"] or [])]
+                with st.expander(f"{sc['nom']} — {len(linked)} élément(s) ouvert(s)"):
+                    for r in linked[:8]:
+                        st.markdown(f"{prio_badge(r['priorite'])} {link(r['titre'], r['url'])}")
     with b:
         st.subheader("État des sources")
         rows = q("SELECT statut, COUNT(*) n FROM sources GROUP BY statut")

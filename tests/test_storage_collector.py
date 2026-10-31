@@ -94,18 +94,19 @@ def test_filtre_mots_cles_et_frequence(storage):
     assert not is_due({"derniere_verification": iso(utcnow()), "frequence_minutes": 60})
 
 
-def test_pipeline_complet_sans_reseau(storage, monkeypatch, demo_profile):
+def test_pipeline_complet_sans_reseau(storage, monkeypatch, profil):
     import veille.pipeline as pl
     _src(storage)
     f = make_fetcher({"/rss": (200, fixture_bytes("rss_valide.xml"))}, {"feeds.test"})
     monkeypatch.setattr(pl, "collect", lambda s, **kw: collect(s, fetcher=f, only_due=False))
     monkeypatch.setattr(pl, "enrich_for", lambda s, ids, settings=None: {})
-    monkeypatch.setattr(pl, "current_profile", lambda: demo_profile)
+    monkeypatch.setattr(pl, "current_profile", lambda: profil)
     res = pl.run_pipeline(storage)
     assert res["analyses"] == 3
     rows = {r["titre"][:12]: r for r in storage.list_articles()}
-    forti = next(r for t, r in rows.items() if t.startswith("Vulnérabilit"))
-    assert forti["technologies"][0]["nom"].startswith("Fortinet")
+    ad = next(r for t, r in rows.items() if t.startswith("Vulnérabilit"))
+    assert {t["nom"] for t in ad["technologies"]} >= {"Active Directory (corp.aerostar.lan)"}
+    assert ad["scenarios"] and ad["scenarios"][0]["nom"].startswith("Rançongiciel")
     assert storage.list_actions()  # au moins une action proposée
 
 

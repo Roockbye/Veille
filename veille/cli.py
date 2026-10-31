@@ -98,7 +98,7 @@ def cmd_sources_import(args) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     setup_logging()
-    p = argparse.ArgumentParser(prog="python -m veille", description="Outil de veille cybersécurité (B1.A1.C3)")
+    p = argparse.ArgumentParser(prog="python -m veille", description="Outil de veille cybersécurité")
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("init", help="Initialise la base et charge le catalogue de sources").set_defaults(f=cmd_init)
     c = sub.add_parser("collect", help="Collecte, enrichit et analyse")

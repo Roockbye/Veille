@@ -50,3 +50,23 @@ def _config_without_profile(tmp_path):
     d = tmp_path / "config"
     shutil.copytree(ROOT / "config", d, ignore=shutil.ignore_patterns("organisation.yaml"))
     return d
+
+
+def test_enregistrement_du_profil_sans_perte(monkeypatch, tmp_path):
+    """Enregistrer le formulaire de configuration ne doit rien perdre du profil d'exemple."""
+    from veille.organisation import load_demo_profile, load_profile
+    monkeypatch.setenv("VEILLE_CONFIG_DIR", str(_config_without_profile(tmp_path)))
+    at = _run("configuration")
+    submit = next(b for b in at.button if "Enregistrer le profil" in b.label)
+    submit.click().run()
+    assert not at.exception, [e.message for e in at.exception]
+    saved, ref = load_profile(), load_demo_profile()
+    for k in ("nom", "secteur", "secteurs_secondaires", "roles", "taille", "effectif", "maturite_cyber", "donnees_traitees",
+              "exigences", "themes_veille", "contraintes_securite", "risques_connus"):
+        assert saved[k] == ref[k], k
+    assert [t["nom"] for t in saved["technologies"]] == [t["nom"] for t in ref["technologies"]]
+    m365 = next(t for t in saved["technologies"] if t["nom"].startswith("Microsoft 365"))
+    assert "Veeam Backup for Microsoft 365" in m365["exclusions"]
+    assert {t["nom"] for t in saved["technologies"] if t.get("marque_inconnue")} == {t["nom"] for t in ref["technologies"] if t.get("marque_inconnue")}
+    assert saved["scenarios_redoutes"] == ref["scenarios_redoutes"] and saved["responsables"] == ref["responsables"]
+    assert saved["echeances"] == ref["echeances"] and saved["besoins_securite"] == ref["besoins_securite"]

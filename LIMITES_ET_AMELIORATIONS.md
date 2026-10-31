@@ -25,15 +25,26 @@
   sans traduction.
 - Les **impacts C/I/D** sont déduits d'indices textuels. Ce sont des potentialités, pas des constats.
 - Les poids du score et les seuils sont des choix méthodologiques documentés, à calibrer selon l'organisation.
+- Le **rattachement aux scénarios redoutés** repose sur des mots-clés : un élément peut être rattaché à tort
+  (mot-clé générique) ou manqué (vocabulaire différent). Les mots-clés se règlent dans le profil.
+- Les équipements dont la **marque n'est pas documentée** (pare-feu/VPN et NAS d'AéroStar) sont détectés par des
+  mots-clés génériques : les vulnérabilités de produits de ce type remontent toutes en « présence à confirmer »,
+  tant que l'inventaire n'est pas complété.
 - Le regroupement des sujets identiques (« confirmé par N sources ») repose sur des CVE communes. Les sujets sans CVE
   ne sont pas regroupés.
 
 ### Réglementaire et normatif
-- La **base de connaissance** (`referentiels.yaml`) est datée du 29/10/2026 et doit être tenue à jour. Points à
+- La **base de connaissance** (`referentiels.yaml`) a été révisée le 31/10/2026 et doit être tenue à jour. Ses dates
+  n'ont **pas été vérifiées automatiquement** : EUR-Lex et Légifrance refusent les clients automatisés. En
+  particulier, les dates d'application de Part-IS et du règlement sur les biens à double usage sont à confirmer. Points à
   vérifier : transposition française de NIS 2, calendrier de l'AI Act (propositions de modification), actes
   d'exécution du CRA.
 - L'applicabilité est une **orientation** fondée sur le profil déclaré, pas un avis juridique.
 - Les normes ISO ne sont suivies que par leurs **métadonnées** ; le contenu des révisions n'est pas analysé.
+- Le détail des exigences **AirCyber** (Bronze, Silver, Gold) n'est pas public : l'outil suit le programme et
+  l'échéance, mais ne réalise pas d'analyse d'écarts automatique par rapport au niveau Bronze.
+- **EN 9100** n'est pas couverte par l'ISO Open Data : une révision de la série 9100 doit être suivie manuellement
+  (annonces de l'IAQG).
 
 ### Application
 - L'interface n'a pas d'**authentification** ni de gestion des rôles : elle est prévue pour un usage local
@@ -48,12 +59,14 @@
 | Priorité | Amélioration | Bénéfice |
 |---|---|---|
 | Haute | Connecteur API Légifrance (PISTE, OAuth client credentials) | Veille réglementaire française automatisée (transposition NIS 2, décrets) |
+| Haute | Grille d'auto-évaluation AirCyber Bronze reliée au plan d'action (à partir des exigences communiquées par les clients) | Mesure de l'écart avant l'échéance de fin 2027 |
 | Haute | Comparaison automatique des versions affectées (données CPE du NVD) avec les versions de l'inventaire | Moins de faux positifs, priorisation plus fine |
 | Haute | Import de l'inventaire depuis un outil de gestion de parc (CSV, GLPI, export EDR) | Inventaire exhaustif et à jour |
 | Moyenne | Authentification (SSO/OIDC) et rôles (analyste, RSSI, lecteur) | Usage multi-utilisateurs |
 | Moyenne | Récupération du contenu complet des articles (dans le respect des conditions d'utilisation) | Analyse plus précise |
 | Moyenne | Traduction locale (modèle hébergé en interne) | Résumés en français sans service externe |
 | Moyenne | Regroupement sémantique des sujets (similarité de titres) | Synthèse plus lisible |
+| Moyenne | Chiffrage assisté des actions (catalogue de coûts, aides Cyber Boost) | Arbitrage budgétaire sur l'enveloppe de 180 k€ |
 | Moyenne | Indicateurs de performance de la veille (délai de traitement, taux de faux positifs) | Pilotage et amélioration continue |
 | Basse | Export vers un outil de ticketing (GLPI, Jira) | Intégration au processus de changement |
 | Basse | Passage à PostgreSQL | Montée en charge |
